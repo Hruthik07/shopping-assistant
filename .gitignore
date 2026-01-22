@@ -68,8 +68,8 @@ models/
 *.pkl
 *.pickle
 
-# Evaluation reports (optional - can be included or excluded)
-# evaluation/reports/
+# Evaluation reports
+evaluation/reports/
 
 # Temporary files
 *.tmp
@@ -91,6 +91,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# DeepEval telemetry
+.deepeval/
 
 
 
