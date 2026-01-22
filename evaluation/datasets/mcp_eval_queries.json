@@ -1,0 +1,37 @@
+{
+  "name": "mcp_eval_queries",
+  "description": "MCP evaluation dataset: tool selection + constraint compliance + faithfulness checks",
+  "queries": [
+    {
+      "id": "mcp-001",
+      "query": "Find organic hair removal cream for men under $20",
+      "expected_tools": ["search_products"],
+      "constraints": { "max_price": 20, "min_products": 3, "require_links": true }
+    },
+    {
+      "id": "mcp-002",
+      "query": "Find wireless earbuds between $50 and $120",
+      "expected_tools": ["search_products"],
+      "constraints": { "min_price": 50, "max_price": 120, "min_products": 3, "require_links": true }
+    },
+    {
+      "id": "mcp-003",
+      "query": "Show me a face wash for dark spots under $15",
+      "expected_tools": ["search_products"],
+      "constraints": { "max_price": 15, "min_products": 3, "require_links": true }
+    },
+    {
+      "id": "mcp-004",
+      "query": "I want to buy a Philips trimmer under $40",
+      "expected_tools": ["search_products"],
+      "constraints": { "max_price": 40, "min_products": 3, "require_links": true }
+    },
+    {
+      "id": "mcp-005",
+      "query": "Find a 4-person camping tent under $150",
+      "expected_tools": ["search_products"],
+      "constraints": { "max_price": 150, "min_products": 3, "require_links": true }
+    }
+  ]
+}
+

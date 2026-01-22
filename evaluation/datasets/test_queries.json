@@ -1,0 +1,86 @@
+{
+  "description": "Standard test queries for evaluation",
+  "version": "1.0",
+  "queries": [
+    {
+      "category": "product_search",
+      "query": "Find me wireless headphones under $100",
+      "expected_intent": "search",
+      "expected_tools": ["search_products"]
+    },
+    {
+      "category": "product_search",
+      "query": "What are the best laptops for gaming?",
+      "expected_intent": "search",
+      "expected_tools": ["search_products"]
+    },
+    {
+      "category": "price_range",
+      "query": "Show me running shoes between $50 and $90",
+      "expected_intent": "search",
+      "expected_tools": ["search_products"]
+    },
+    {
+      "category": "brand_specific",
+      "query": "Find me Nike sneakers",
+      "expected_intent": "search",
+      "expected_tools": ["search_products"]
+    },
+    {
+      "category": "brand_exclusion",
+      "query": "I want running shoes but not Nike",
+      "expected_intent": "search",
+      "expected_tools": ["search_products"]
+    },
+    {
+      "category": "multi_attribute",
+      "query": "Find me a laptop with 16GB RAM, NVIDIA GPU, and under $1500",
+      "expected_intent": "search",
+      "expected_tools": ["search_products"]
+    },
+    {
+      "category": "product_inquiry",
+      "query": "What's the price of the latest iPhone?",
+      "expected_intent": "search",
+      "expected_tools": ["search_products", "check_product_price"]
+    },
+    {
+      "category": "comparison",
+      "query": "Compare wireless earbuds from Sony and Bose",
+      "expected_intent": "search",
+      "expected_tools": ["search_products"]
+    },
+    {
+      "category": "general",
+      "query": "Tell me about the best selling products",
+      "expected_intent": "search",
+      "expected_tools": ["search_products"]
+    },
+    {
+      "category": "edge_case",
+      "query": "Find me something",
+      "expected_intent": "search",
+      "expected_tools": ["search_products"]
+    }
+  ],
+  "multi_turn_conversations": [
+    {
+      "name": "refinement_conversation",
+      "turns": [
+        "Find me running shoes under $100",
+        "I need size 10",
+        "Show me only Nike brand",
+        "Actually, I don't want Nike, show me Adidas instead"
+      ]
+    },
+    {
+      "name": "product_exploration",
+      "turns": [
+        "What are good headphones for gym?",
+        "What about wireless ones?",
+        "Show me options under $80"
+      ]
+    }
+  ]
+}
+

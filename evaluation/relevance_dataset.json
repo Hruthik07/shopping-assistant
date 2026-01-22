@@ -1,0 +1,444 @@
+{
+  "description": "Relevance dataset for IR metrics evaluation",
+  "relevance_scale": {
+    "0": "Not relevant",
+    "1": "Somewhat relevant",
+    "2": "Relevant",
+    "3": "Highly relevant",
+    "4": "Perfect match"
+  },
+  "instructions": [
+    "1. For each query, retrieve products using the system",
+    "2. Manually label each product with relevance score (0-4)",
+    "3. Update the 'relevant_products' dict with product_id: relevance_score",
+    "4. Save the file and run evaluation/evaluate_ir_metrics.py"
+  ],
+  "queries": [
+    {
+      "query_id": "Q001",
+      "query": "Find me wireless headphones",
+      "retrieved_products": [
+        {
+          "rank": 1,
+          "product_id": "prod_prod_001",
+          "name": "Wireless Bluetooth Headphones",
+          "description": "Wireless Bluetooth Headphones Premium noise-cancelling wireless headphones with 30-hour battery life, comfortable over-ear design, and crystal-clear sound quality. Perfect for music lovers and profess",
+          "category": "electronics",
+          "price": "199.99"
+        },
+        {
+          "rank": 2,
+          "product_id": "prod_prod_007",
+          "name": "Wireless Charging Pad",
+          "description": "Wireless Charging Pad Fast wireless charging pad compatible with all Qi-enabled devices. Sleek design with LED indicator. Charges phones, earbuds, and smartwatches. Category: electronics",
+          "category": "electronics",
+          "price": "34.99"
+        },
+        {
+          "rank": 3,
+          "product_id": "prod_prod_002",
+          "name": "Smart Fitness Watch",
+          "description": "Smart Fitness Watch Advanced fitness tracking watch with heart rate monitor, GPS, sleep tracking, and 7-day battery life. Water-resistant design perfect for workouts and daily wear. Category: electron",
+          "category": "electronics",
+          "price": "299.99"
+        },
+        {
+          "rank": 4,
+          "product_id": "prod_prod_008",
+          "name": "Backpack with USB Port",
+          "description": "Backpack with USB Port Durable backpack with built-in USB charging port, multiple compartments, and padded laptop sleeve. Perfect for students and professionals. Category: accessories",
+          "category": "accessories",
+          "price": "59.99"
+        },
+        {
+          "rank": 5,
+          "product_id": "prod_prod_005",
+          "name": "Laptop Stand Adjustable",
+          "description": "Laptop Stand Adjustable Ergonomic aluminum laptop stand with adjustable height and angle. Improves posture and reduces neck strain. Fits laptops up to 17 inches. Category: electronics",
+          "category": "electronics",
+          "price": "49.99"
+        },
+        {
+          "rank": 6,
+          "product_id": "prod_prod_006",
+          "name": "Running Shoes",
+          "description": "Running Shoes Lightweight running shoes with cushioned sole and breathable mesh upper. Perfect for jogging, walking, and gym workouts. Available in multiple sizes. Category: footwear",
+          "category": "footwear",
+          "price": "89.99"
+        },
+        {
+          "rank": 7,
+          "product_id": "prod_prod_003",
+          "name": "Organic Cotton T-Shirt",
+          "description": "Organic Cotton T-Shirt Comfortable 100% organic cotton t-shirt, available in multiple colors. Sustainable and eco-friendly, perfect for everyday wear. Machine washable. Category: clothing",
+          "category": "clothing",
+          "price": "29.99"
+        },
+        {
+          "rank": 8,
+          "product_id": "prod_prod_004",
+          "name": "Stainless Steel Water Bottle",
+          "description": "Stainless Steel Water Bottle Insulated stainless steel water bottle keeps drinks cold for 24 hours or hot for 12 hours. BPA-free, leak-proof design with easy-carry handle. Category: accessories",
+          "category": "accessories",
+          "price": "24.99"
+        }
+      ],
+      "relevant_products": {}
+    },
+    {
+      "query_id": "Q002",
+      "query": "What's the price of laptops with 16GB RAM?",
+      "retrieved_products": [
+        {
+          "rank": 1,
+          "product_id": "prod_prod_005",
+          "name": "Laptop Stand Adjustable",
+          "description": "Laptop Stand Adjustable Ergonomic aluminum laptop stand with adjustable height and angle. Improves posture and reduces neck strain. Fits laptops up to 17 inches. Category: electronics",
+          "category": "electronics",
+          "price": "49.99"
+        },
+        {
+          "rank": 2,
+          "product_id": "prod_prod_008",
+          "name": "Backpack with USB Port",
+          "description": "Backpack with USB Port Durable backpack with built-in USB charging port, multiple compartments, and padded laptop sleeve. Perfect for students and professionals. Category: accessories",
+          "category": "accessories",
+          "price": "59.99"
+        },
+        {
+          "rank": 3,
+          "product_id": "prod_prod_001",
+          "name": "Wireless Bluetooth Headphones",
+          "description": "Wireless Bluetooth Headphones Premium noise-cancelling wireless headphones with 30-hour battery life, comfortable over-ear design, and crystal-clear sound quality. Perfect for music lovers and profess",
+          "category": "electronics",
+          "price": "199.99"
+        },
+        {
+          "rank": 4,
+          "product_id": "prod_prod_007",
+          "name": "Wireless Charging Pad",
+          "description": "Wireless Charging Pad Fast wireless charging pad compatible with all Qi-enabled devices. Sleek design with LED indicator. Charges phones, earbuds, and smartwatches. Category: electronics",
+          "category": "electronics",
+          "price": "34.99"
+        },
+        {
+          "rank": 5,
+          "product_id": "prod_prod_006",
+          "name": "Running Shoes",
+          "description": "Running Shoes Lightweight running shoes with cushioned sole and breathable mesh upper. Perfect for jogging, walking, and gym workouts. Available in multiple sizes. Category: footwear",
+          "category": "footwear",
+          "price": "89.99"
+        },
+        {
+          "rank": 6,
+          "product_id": "prod_prod_002",
+          "name": "Smart Fitness Watch",
+          "description": "Smart Fitness Watch Advanced fitness tracking watch with heart rate monitor, GPS, sleep tracking, and 7-day battery life. Water-resistant design perfect for workouts and daily wear. Category: electron",
+          "category": "electronics",
+          "price": "299.99"
+        },
+        {
+          "rank": 7,
+          "product_id": "prod_prod_004",
+          "name": "Stainless Steel Water Bottle",
+          "description": "Stainless Steel Water Bottle Insulated stainless steel water bottle keeps drinks cold for 24 hours or hot for 12 hours. BPA-free, leak-proof design with easy-carry handle. Category: accessories",
+          "category": "accessories",
+          "price": "24.99"
+        },
+        {
+          "rank": 8,
+          "product_id": "prod_prod_003",
+          "name": "Organic Cotton T-Shirt",
+          "description": "Organic Cotton T-Shirt Comfortable 100% organic cotton t-shirt, available in multiple colors. Sustainable and eco-friendly, perfect for everyday wear. Machine washable. Category: clothing",
+          "category": "clothing",
+          "price": "29.99"
+        }
+      ],
+      "relevant_products": {}
+    },
+    {
+      "query_id": "Q003",
+      "query": "Show me top 5 AI Engineering books",
+      "retrieved_products": [
+        {
+          "rank": 1,
+          "product_id": "prod_prod_002",
+          "name": "Smart Fitness Watch",
+          "description": "Smart Fitness Watch Advanced fitness tracking watch with heart rate monitor, GPS, sleep tracking, and 7-day battery life. Water-resistant design perfect for workouts and daily wear. Category: electron",
+          "category": "electronics",
+          "price": "299.99"
+        },
+        {
+          "rank": 2,
+          "product_id": "prod_prod_008",
+          "name": "Backpack with USB Port",
+          "description": "Backpack with USB Port Durable backpack with built-in USB charging port, multiple compartments, and padded laptop sleeve. Perfect for students and professionals. Category: accessories",
+          "category": "accessories",
+          "price": "59.99"
+        },
+        {
+          "rank": 3,
+          "product_id": "prod_prod_005",
+          "name": "Laptop Stand Adjustable",
+          "description": "Laptop Stand Adjustable Ergonomic aluminum laptop stand with adjustable height and angle. Improves posture and reduces neck strain. Fits laptops up to 17 inches. Category: electronics",
+          "category": "electronics",
+          "price": "49.99"
+        },
+        {
+          "rank": 4,
+          "product_id": "prod_prod_003",
+          "name": "Organic Cotton T-Shirt",
+          "description": "Organic Cotton T-Shirt Comfortable 100% organic cotton t-shirt, available in multiple colors. Sustainable and eco-friendly, perfect for everyday wear. Machine washable. Category: clothing",
+          "category": "clothing",
+          "price": "29.99"
+        },
+        {
+          "rank": 5,
+          "product_id": "prod_prod_001",
+          "name": "Wireless Bluetooth Headphones",
+          "description": "Wireless Bluetooth Headphones Premium noise-cancelling wireless headphones with 30-hour battery life, comfortable over-ear design, and crystal-clear sound quality. Perfect for music lovers and profess",
+          "category": "electronics",
+          "price": "199.99"
+        },
+        {
+          "rank": 6,
+          "product_id": "prod_prod_006",
+          "name": "Running Shoes",
+          "description": "Running Shoes Lightweight running shoes with cushioned sole and breathable mesh upper. Perfect for jogging, walking, and gym workouts. Available in multiple sizes. Category: footwear",
+          "category": "footwear",
+          "price": "89.99"
+        },
+        {
+          "rank": 7,
+          "product_id": "prod_prod_007",
+          "name": "Wireless Charging Pad",
+          "description": "Wireless Charging Pad Fast wireless charging pad compatible with all Qi-enabled devices. Sleek design with LED indicator. Charges phones, earbuds, and smartwatches. Category: electronics",
+          "category": "electronics",
+          "price": "34.99"
+        },
+        {
+          "rank": 8,
+          "product_id": "prod_prod_004",
+          "name": "Stainless Steel Water Bottle",
+          "description": "Stainless Steel Water Bottle Insulated stainless steel water bottle keeps drinks cold for 24 hours or hot for 12 hours. BPA-free, leak-proof design with easy-carry handle. Category: accessories",
+          "category": "accessories",
+          "price": "24.99"
+        }
+      ],
+      "relevant_products": {}
+    },
+    {
+      "query_id": "Q004",
+      "query": "Find face cream for dark spots under $25",
+      "retrieved_products": [
+        {
+          "rank": 1,
+          "product_id": "prod_prod_003",
+          "name": "Organic Cotton T-Shirt",
+          "description": "Organic Cotton T-Shirt Comfortable 100% organic cotton t-shirt, available in multiple colors. Sustainable and eco-friendly, perfect for everyday wear. Machine washable. Category: clothing",
+          "category": "clothing",
+          "price": "29.99"
+        },
+        {
+          "rank": 2,
+          "product_id": "prod_prod_006",
+          "name": "Running Shoes",
+          "description": "Running Shoes Lightweight running shoes with cushioned sole and breathable mesh upper. Perfect for jogging, walking, and gym workouts. Available in multiple sizes. Category: footwear",
+          "category": "footwear",
+          "price": "89.99"
+        },
+        {
+          "rank": 3,
+          "product_id": "prod_prod_001",
+          "name": "Wireless Bluetooth Headphones",
+          "description": "Wireless Bluetooth Headphones Premium noise-cancelling wireless headphones with 30-hour battery life, comfortable over-ear design, and crystal-clear sound quality. Perfect for music lovers and profess",
+          "category": "electronics",
+          "price": "199.99"
+        },
+        {
+          "rank": 4,
+          "product_id": "prod_prod_005",
+          "name": "Laptop Stand Adjustable",
+          "description": "Laptop Stand Adjustable Ergonomic aluminum laptop stand with adjustable height and angle. Improves posture and reduces neck strain. Fits laptops up to 17 inches. Category: electronics",
+          "category": "electronics",
+          "price": "49.99"
+        },
+        {
+          "rank": 5,
+          "product_id": "prod_prod_002",
+          "name": "Smart Fitness Watch",
+          "description": "Smart Fitness Watch Advanced fitness tracking watch with heart rate monitor, GPS, sleep tracking, and 7-day battery life. Water-resistant design perfect for workouts and daily wear. Category: electron",
+          "category": "electronics",
+          "price": "299.99"
+        },
+        {
+          "rank": 6,
+          "product_id": "prod_prod_008",
+          "name": "Backpack with USB Port",
+          "description": "Backpack with USB Port Durable backpack with built-in USB charging port, multiple compartments, and padded laptop sleeve. Perfect for students and professionals. Category: accessories",
+          "category": "accessories",
+          "price": "59.99"
+        },
+        {
+          "rank": 7,
+          "product_id": "prod_prod_007",
+          "name": "Wireless Charging Pad",
+          "description": "Wireless Charging Pad Fast wireless charging pad compatible with all Qi-enabled devices. Sleek design with LED indicator. Charges phones, earbuds, and smartwatches. Category: electronics",
+          "category": "electronics",
+          "price": "34.99"
+        },
+        {
+          "rank": 8,
+          "product_id": "prod_prod_004",
+          "name": "Stainless Steel Water Bottle",
+          "description": "Stainless Steel Water Bottle Insulated stainless steel water bottle keeps drinks cold for 24 hours or hot for 12 hours. BPA-free, leak-proof design with easy-carry handle. Category: accessories",
+          "category": "accessories",
+          "price": "24.99"
+        }
+      ],
+      "relevant_products": {}
+    },
+    {
+      "query_id": "Q005",
+      "query": "Search for gaming laptops with NVIDIA GPU",
+      "retrieved_products": [
+        {
+          "rank": 1,
+          "product_id": "prod_prod_005",
+          "name": "Laptop Stand Adjustable",
+          "description": "Laptop Stand Adjustable Ergonomic aluminum laptop stand with adjustable height and angle. Improves posture and reduces neck strain. Fits laptops up to 17 inches. Category: electronics",
+          "category": "electronics",
+          "price": "49.99"
+        },
+        {
+          "rank": 2,
+          "product_id": "prod_prod_006",
+          "name": "Running Shoes",
+          "description": "Running Shoes Lightweight running shoes with cushioned sole and breathable mesh upper. Perfect for jogging, walking, and gym workouts. Available in multiple sizes. Category: footwear",
+          "category": "footwear",
+          "price": "89.99"
+        },
+        {
+          "rank": 3,
+          "product_id": "prod_prod_008",
+          "name": "Backpack with USB Port",
+          "description": "Backpack with USB Port Durable backpack with built-in USB charging port, multiple compartments, and padded laptop sleeve. Perfect for students and professionals. Category: accessories",
+          "category": "accessories",
+          "price": "59.99"
+        },
+        {
+          "rank": 4,
+          "product_id": "prod_prod_002",
+          "name": "Smart Fitness Watch",
+          "description": "Smart Fitness Watch Advanced fitness tracking watch with heart rate monitor, GPS, sleep tracking, and 7-day battery life. Water-resistant design perfect for workouts and daily wear. Category: electron",
+          "category": "electronics",
+          "price": "299.99"
+        },
+        {
+          "rank": 5,
+          "product_id": "prod_prod_001",
+          "name": "Wireless Bluetooth Headphones",
+          "description": "Wireless Bluetooth Headphones Premium noise-cancelling wireless headphones with 30-hour battery life, comfortable over-ear design, and crystal-clear sound quality. Perfect for music lovers and profess",
+          "category": "electronics",
+          "price": "199.99"
+        },
+        {
+          "rank": 6,
+          "product_id": "prod_prod_007",
+          "name": "Wireless Charging Pad",
+          "description": "Wireless Charging Pad Fast wireless charging pad compatible with all Qi-enabled devices. Sleek design with LED indicator. Charges phones, earbuds, and smartwatches. Category: electronics",
+          "category": "electronics",
+          "price": "34.99"
+        },
+        {
+          "rank": 7,
+          "product_id": "prod_prod_003",
+          "name": "Organic Cotton T-Shirt",
+          "description": "Organic Cotton T-Shirt Comfortable 100% organic cotton t-shirt, available in multiple colors. Sustainable and eco-friendly, perfect for everyday wear. Machine washable. Category: clothing",
+          "category": "clothing",
+          "price": "29.99"
+        },
+        {
+          "rank": 8,
+          "product_id": "prod_prod_004",
+          "name": "Stainless Steel Water Bottle",
+          "description": "Stainless Steel Water Bottle Insulated stainless steel water bottle keeps drinks cold for 24 hours or hot for 12 hours. BPA-free, leak-proof design with easy-carry handle. Category: accessories",
+          "category": "accessories",
+          "price": "24.99"
+        }
+      ],
+      "relevant_products": {}
+    },
+    {
+      "query_id": "Q006",
+      "query": "Tell me about the best selling products",
+      "retrieved_products": [
+        {
+          "rank": 1,
+          "product_id": "prod_prod_008",
+          "name": "Backpack with USB Port",
+          "description": "Backpack with USB Port Durable backpack with built-in USB charging port, multiple compartments, and padded laptop sleeve. Perfect for students and professionals. Category: accessories",
+          "category": "accessories",
+          "price": "59.99"
+        },
+        {
+          "rank": 2,
+          "product_id": "prod_prod_002",
+          "name": "Smart Fitness Watch",
+          "description": "Smart Fitness Watch Advanced fitness tracking watch with heart rate monitor, GPS, sleep tracking, and 7-day battery life. Water-resistant design perfect for workouts and daily wear. Category: electron",
+          "category": "electronics",
+          "price": "299.99"
+        },
+        {
+          "rank": 3,
+          "product_id": "prod_prod_006",
+          "name": "Running Shoes",
+          "description": "Running Shoes Lightweight running shoes with cushioned sole and breathable mesh upper. Perfect for jogging, walking, and gym workouts. Available in multiple sizes. Category: footwear",
+          "category": "footwear",
+          "price": "89.99"
+        },
+        {
+          "rank": 4,
+          "product_id": "prod_prod_001",
+          "name": "Wireless Bluetooth Headphones",
+          "description": "Wireless Bluetooth Headphones Premium noise-cancelling wireless headphones with 30-hour battery life, comfortable over-ear design, and crystal-clear sound quality. Perfect for music lovers and profess",
+          "category": "electronics",
+          "price": "199.99"
+        },
+        {
+          "rank": 5,
+          "product_id": "prod_prod_007",
+          "name": "Wireless Charging Pad",
+          "description": "Wireless Charging Pad Fast wireless charging pad compatible with all Qi-enabled devices. Sleek design with LED indicator. Charges phones, earbuds, and smartwatches. Category: electronics",
+          "category": "electronics",
+          "price": "34.99"
+        },
+        {
+          "rank": 6,
+          "product_id": "prod_prod_003",
+          "name": "Organic Cotton T-Shirt",
+          "description": "Organic Cotton T-Shirt Comfortable 100% organic cotton t-shirt, available in multiple colors. Sustainable and eco-friendly, perfect for everyday wear. Machine washable. Category: clothing",
+          "category": "clothing",
+          "price": "29.99"
+        },
+        {
+          "rank": 7,
+          "product_id": "prod_prod_005",
+          "name": "Laptop Stand Adjustable",
+          "description": "Laptop Stand Adjustable Ergonomic aluminum laptop stand with adjustable height and angle. Improves posture and reduces neck strain. Fits laptops up to 17 inches. Category: electronics",
+          "category": "electronics",
+          "price": "49.99"
+        },
+        {
+          "rank": 8,
+          "product_id": "prod_prod_004",
+          "name": "Stainless Steel Water Bottle",
+          "description": "Stainless Steel Water Bottle Insulated stainless steel water bottle keeps drinks cold for 24 hours or hot for 12 hours. BPA-free, leak-proof design with easy-carry handle. Category: accessories",
+          "category": "accessories",
+          "price": "24.99"
+        }
+      ],
+      "relevant_products": {}
+    }
+  ]
+}

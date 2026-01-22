@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Shopping Assistant</title>
+    <link rel="stylesheet" href="/styles.css?v=13">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <a href="#chat-input" class="skip-to-content">Skip to main content</a>
+    <!-- Interactive Background Effects -->
+    <div class="interactive-background">
+        <div class="interactive-glow" id="cursor-glow"></div>
+    </div>
+    <!-- Scroll Effect Layer -->
+    <div class="scroll-effect-layer"></div>
+    <!-- Geometric Patterns -->
+    <div class="geometric-patterns"></div>
+    <!-- Mesh Gradient Overlay -->
+    <div class="mesh-gradient-overlay"></div>
+    <!-- Particle Effects Container -->
+    <div class="particles-container">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle-alt"></div>
+        <div class="particle-alt"></div>
+        <div class="particle-alt"></div>
+        <div class="particle-alt"></div>
+        <div class="particle-alt"></div>
+    </div>
+    <div class="app-wrapper">
+        <!-- Top Navigation Bar -->
+        <nav class="top-nav">
+            <div class="nav-content">
+                <div class="nav-logo">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="currentColor"/>
+                        <path d="M2 17L12 22L22 17V12L12 17L2 12V17Z" fill="currentColor"/>
+                    </svg>
+                    <span>ShopAI</span>
+                </div>
+                <div class="nav-actions">
+                    <button class="nav-button" id="chat-resize-toggle" title="Resize chat interface" aria-label="Resize chat interface">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" id="resize-icon" aria-hidden="true">
+                            <path d="M7 10l5 5 5-5H7z" fill="currentColor"/>
+                        </svg>
+                    </button>
+                    <button class="nav-button" id="settings-toggle" aria-label="Open settings" aria-expanded="false">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                            <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94L14.4 2.81c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z" fill="currentColor"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="main-container">
+            <!-- Left Sidebar (Settings Panel - Hidden by default) -->
+            <aside class="sidebar" id="sidebar">
+                <div class="sidebar-header">
+                    <h3>Settings</h3>
+                    <button class="close-sidebar" id="close-sidebar">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" fill="currentColor"/>
+                        </svg>
+                    </button>
+                </div>
+                
+                <div class="settings-content">
+                    <div class="setting-group">
+                        <label class="setting-label">Persona</label>
+                        <select id="persona-select" class="setting-select">
+                            <option value="friendly">Friendly Assistant</option>
+                            <option value="professional">Professional Advisor</option>
+                            <option value="casual">Casual Helper</option>
+                            <option value="expert">Expert Consultant</option>
+                        </select>
+                    </div>
+
+                    <div class="setting-group">
+                        <label class="setting-label">Tone of Voice</label>
+                        <select id="tone-select" class="setting-select">
+                            <option value="warm">Warm & Welcoming</option>
+                            <option value="confident">Confident & Direct</option>
+                            <option value="enthusiastic">Enthusiastic</option>
+                            <option value="calm">Calm & Reassuring</option>
+                        </select>
+                    </div>
+
+                    <div class="setting-group">
+                        <label class="setting-label">Voice Assistant</label>
+                        <label class="setting-checkbox">
+                            <input type="checkbox" id="voice-output-toggle" />
+                            <span>Enable voice responses</span>
+                        </label>
+                    </div>
+
+                    <div class="setting-group voice-settings-group" style="display: none;">
+                        <label class="setting-label">Speech Rate</label>
+                        <div class="voice-setting-control">
+                            <input type="range" id="voice-rate" min="0.5" max="2" step="0.1" value="1.0" class="voice-setting-slider" />
+                            <span id="voice-rate-value" class="voice-setting-value">1.0x</span>
+                        </div>
+                    </div>
+
+                    <div class="setting-group voice-settings-group" style="display: none;">
+                        <label class="setting-label">Voice Pitch</label>
+                        <div class="voice-setting-control">
+                            <input type="range" id="voice-pitch" min="0.5" max="2" step="0.1" value="1.0" class="voice-setting-slider" />
+                            <span id="voice-pitch-value" class="voice-setting-value">1.0</span>
+                        </div>
+                    </div>
+
+                    <div class="setting-group voice-settings-group" style="display: none;">
+                        <label class="setting-label">Volume</label>
+                        <div class="voice-setting-control">
+                            <input type="range" id="voice-volume" min="0" max="1" step="0.1" value="0.8" class="voice-setting-slider" />
+                            <span id="voice-volume-value" class="voice-setting-value">80%</span>
+                        </div>
+                    </div>
+
+                    <button id="apply-settings" class="apply-button">Apply Settings</button>
+                </div>
+            </aside>
+
+            <!-- Center Chat Area -->
+            <div class="chat-area">
+                <!-- Welcome Section -->
+                <div class="welcome-section" id="welcome-section">
+                    <div class="welcome-content">
+                        <h1>How can I help you today?</h1>
+                        <p>Ask me anything about products, prices, or recommendations</p>
+                        
+                        <!-- Quick Action Buttons -->
+                        <div class="quick-actions">
+                            <button class="quick-action-btn" data-query="Find me running shoes under $100" aria-label="Search for running shoes">
+                                Running Shoes
+                            </button>
+                            <button class="quick-action-btn" data-query="Show me wireless headphones" aria-label="Search for wireless headphones">
+                                Headphones
+                            </button>
+                            <button class="quick-action-btn" data-query="Best laptop for students" aria-label="Search for laptops">
+                                Laptops
+                            </button>
+                            <button class="quick-action-btn" data-query="Organic skincare products" aria-label="Search for skincare products">
+                                Skincare
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chat Messages -->
+                <div id="chat-messages" class="chat-messages"></div>
+
+                <!-- Chat Input -->
+                <div class="chat-input-wrapper">
+                    <div class="input-container">
+                        <input 
+                            type="text" 
+                            id="chat-input" 
+                            class="chat-input" 
+                            placeholder="Ask me anything about products..."
+                            autocomplete="off"
+                            aria-label="Chat input"
+                            aria-describedby="status"
+                            name="chat-input"
+                        />
+                        <button id="voice-button" class="voice-button" title="Voice input (click to start/stop)" aria-label="Start voice input" aria-pressed="false">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z" fill="currentColor"/>
+                                <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" fill="currentColor"/>
+                            </svg>
+                        </button>
+                        <button id="send-button" class="send-button" title="Send message" aria-label="Send message">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" fill="currentColor"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="status-indicator ready" role="status" aria-live="polite">
+                        <span id="status">Ready</span>
+                    </div>
+                </div>
+                   </div>
+
+                   <!-- Draggable Resizer -->
+                   <div class="resizer" id="chat-resizer"></div>
+
+                   <!-- Right Products Panel -->
+                    <aside class="products-sidebar" id="products-panel" aria-label="Product recommendations">
+                <div class="products-header">
+                    <h3>Products</h3>
+                    <span id="product-count" class="product-count" aria-live="polite" aria-atomic="true">0</span>
+                </div>
+                <div id="products-list" class="products-list">
+                    <div class="empty-products">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none">
+                            <path d="M7 18c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zM1 2v2h2l3.6 7.59-1.35 2.45c-.15.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12L8.1 13h7.45c.75 0 1.41-.41 1.75-1.03L21.7 4H5.21l-.94-2H1zm16 16c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" fill="currentColor"/>
+                        </svg>
+                        <p>No products yet</p>
+                        <span>Start a conversation to see recommendations</span>
+                    </div>
+                </div>
+            </aside>
+        </main>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+    <script src="/app.js"></script>
+</body>
+</html>

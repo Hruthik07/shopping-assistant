@@ -1,0 +1,60 @@
+[
+  {
+    "product_id": "prod_001",
+    "question": "How long does the battery last?",
+    "answer": "The headphones have a battery life of up to 30 hours on a single charge with noise cancellation enabled."
+  },
+  {
+    "product_id": "prod_001",
+    "question": "Are these headphones compatible with all devices?",
+    "answer": "Yes, these headphones use Bluetooth 5.0 and are compatible with any Bluetooth-enabled device including phones, tablets, and computers."
+  },
+  {
+    "product_id": "prod_002",
+    "question": "Is the watch water-resistant?",
+    "answer": "Yes, the watch is water-resistant up to 50 meters, making it suitable for swimming and water activities."
+  },
+  {
+    "product_id": "prod_002",
+    "question": "Does it have GPS?",
+    "answer": "Yes, the watch includes built-in GPS for accurate tracking of outdoor activities like running and cycling."
+  },
+  {
+    "product_id": "prod_003",
+    "question": "What sizes are available?",
+    "answer": "The t-shirt is available in sizes S, M, L, and XL. Please refer to our size chart for measurements."
+  },
+  {
+    "product_id": "prod_003",
+    "question": "Is the cotton really organic?",
+    "answer": "Yes, the t-shirt is made from 100% certified organic cotton, ensuring it's eco-friendly and sustainable."
+  },
+  {
+    "product_id": "prod_004",
+    "question": "How long does it keep drinks cold?",
+    "answer": "The insulated bottle keeps drinks cold for up to 24 hours and hot for up to 12 hours."
+  },
+  {
+    "product_id": "prod_005",
+    "question": "What size laptops does it fit?",
+    "answer": "The stand fits laptops up to 17 inches in size. It's adjustable to accommodate different laptop sizes."
+  },
+  {
+    "product_id": "prod_006",
+    "question": "Are these good for running?",
+    "answer": "Yes, these running shoes are specifically designed for running with excellent cushioning and support for long-distance runs."
+  },
+  {
+    "product_id": "prod_007",
+    "question": "What devices are compatible?",
+    "answer": "The charging pad works with all Qi-enabled devices, including most modern smartphones, earbuds, and smartwatches."
+  },
+  {
+    "product_id": "prod_008",
+    "question": "Does it have a laptop compartment?",
+    "answer": "Yes, the backpack includes a padded laptop sleeve that can accommodate laptops up to 15 inches."
+  }
+]
+
+
+

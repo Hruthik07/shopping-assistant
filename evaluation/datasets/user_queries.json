@@ -1,0 +1,24 @@
+{
+  "description": "User-provided test queries for DeepEval evaluation",
+  "version": "1.0",
+  "queries": [
+    {
+      "category": "skincare_search",
+      "query": "i need a face wash to treat darkspots , it should be with less chemicals , doctor recommended, it should be less than 30$ ??",
+      "expected_intent": "search",
+      "expected_tools": ["search_products"]
+    },
+    {
+      "category": "healthcare_search",
+      "query": "i am having a bodypain from last 2 days , can u recommend a good massage oil to treat pain with massage oil ?",
+      "expected_intent": "search",
+      "expected_tools": ["search_products"]
+    },
+    {
+      "category": "product_search",
+      "query": "i need a chess to play , it should make with only wood, board should be white and brown, it should be less than 70$",
+      "expected_intent": "search",
+      "expected_tools": ["search_products"]
+    }
+  ]
+}

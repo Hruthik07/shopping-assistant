@@ -1,0 +1,265 @@
+{
+  "total_queries": 3,
+  "successful": 3,
+  "failed": 0,
+  "evaluation_types": [
+    "llm_quality"
+  ],
+  "aggregate_metrics": {
+    "deepeval": {
+      "average_score": 0.4206666666666667,
+      "min_score": 0.404,
+      "max_score": 0.429,
+      "pass_rate": 0.0
+    }
+  },
+  "results": [
+    {
+      "query": "i need a face wash to treat darkspots , it should be with less chemicals , doctor recommended, it should be less than 30$ ??",
+      "session_id": "eval-20260117164758",
+      "timestamp": "2026-01-17T16:47:58.663154",
+      "evaluation_types": [
+        "llm_quality"
+      ],
+      "deepeval": {
+        "enabled": true,
+        "overall_score": 0.429,
+        "all_passed": false,
+        "metrics": {
+          "faithfulness": {
+            "score": 1.0,
+            "passed": true,
+            "status": "success",
+            "reason": "The score is 1.00 because there are no contradictions—great job staying true to the retrieval context!"
+          },
+          "answer_relevancy": {
+            "score": 1.0,
+            "passed": true,
+            "status": "success",
+            "reason": "The score is 1.00 because the answer was fully relevant, directly addressing all aspects of the input without any irrelevant statements. Great job staying focused and helpful!"
+          },
+          "contextual_relevancy": {
+            "score": 1.0,
+            "passed": true,
+            "status": "success",
+            "reason": "The score is 1.00 because all the relevant statements directly address the user's request for face washes to treat dark spots, under $30, and with options that suggest fewer chemicals."
+          },
+          "contextual_precision": {
+            "score": null,
+            "passed": null,
+            "status": "skipped",
+            "reason": "expected_output not provided"
+          },
+          "summarization": {
+            "score": 0.0,
+            "passed": false,
+            "status": "success",
+            "reason": "The score is 0.00 because the summary introduces a significant amount of extra information not present in the original text, such as product listings, ranking methods, and filtering options, while failing to address key user requests from the original text, such as preferences for fewer chemicals, doctor recommendations, and affordability. This results in a summary that does not accurately reflect the original content."
+          },
+          "bias": {
+            "score": 0.0,
+            "passed": true,
+            "status": "success",
+            "reason": "The score is 0.00 because the actual output contains no biased language or content, demonstrating neutrality and fairness throughout."
+          },
+          "hallucination": {
+            "score": 0.0,
+            "passed": true,
+            "status": "success",
+            "reason": "The score is 0.00 because all details in the actual output are fully aligned with the context and there are no contradictions or hallucinated information."
+          },
+          "toxicity": {
+            "score": 0.0,
+            "passed": true,
+            "status": "success",
+            "reason": "The score is 0.00 because the actual output contains no toxic language or harmful content, as indicated by the absence of any reasons for toxicity."
+          }
+        },
+        "thresholds": {
+          "faithfulness": 0.7,
+          "answer_relevancy": 0.7,
+          "contextual_relevancy": 0.7,
+          "contextual_precision": 0.7,
+          "summarization": 0.7,
+          "bias": 0.8,
+          "hallucination": 0.7,
+          "toxicity": 0.8
+        }
+      },
+      "llm_quality_legacy": {
+        "overall_score": 0.683,
+        "relevance_score": 0.48,
+        "completeness_score": 1.0,
+        "tool_usage_score": 0.5,
+        "structure_score": 0.9
+      },
+      "success": true,
+      "error": null
+    },
+    {
+      "query": "i am having a bodypain from last 2 days , can u recommend a good massage oil to treat pain with massage oil ?",
+      "session_id": "eval-20260117164758",
+      "timestamp": "2026-01-17T16:47:58.677367",
+      "evaluation_types": [
+        "llm_quality"
+      ],
+      "deepeval": {
+        "enabled": true,
+        "overall_score": 0.429,
+        "all_passed": false,
+        "metrics": {
+          "faithfulness": {
+            "score": 1.0,
+            "passed": true,
+            "status": "success",
+            "reason": "The score is 1.00 because there are no contradictions listed, indicating the actual output aligns perfectly with the retrieval context. Great job staying accurate!"
+          },
+          "answer_relevancy": {
+            "score": 1.0,
+            "passed": true,
+            "status": "success",
+            "reason": "The score is 1.00 because the answer was fully relevant and addressed the user's request directly without any irrelevant information. Great job staying focused and helpful!"
+          },
+          "contextual_relevancy": {
+            "score": 1.0,
+            "passed": true,
+            "status": "success",
+            "reason": "The score is 1.00 because the retrieval context directly lists several massage oils specifically for muscle and body pain, which is exactly what the input asked for. Great match!"
+          },
+          "contextual_precision": {
+            "score": null,
+            "passed": null,
+            "status": "skipped",
+            "reason": "expected_output not provided"
+          },
+          "summarization": {
+            "score": 0.0,
+            "passed": false,
+            "status": "success",
+            "reason": "The score is 0.00 because the summary introduces a ranked list of massage oils, product names, prices, ratings, and links that are not present in the original text. Additionally, it omits key questions from the original text about the user's body pain, making the summary completely unrelated to the original content."
+          },
+          "bias": {
+            "score": 0.0,
+            "passed": true,
+            "status": "success",
+            "reason": "The score is 0.00 because the actual output contains no biased language or content, demonstrating neutrality and fairness throughout."
+          },
+          "hallucination": {
+            "score": 0.0,
+            "passed": true,
+            "status": "success",
+            "reason": "The score is 0.00 because all details in the actual output are fully aligned with the context, and there are no contradictions or hallucinated information."
+          },
+          "toxicity": {
+            "score": 0.0,
+            "passed": true,
+            "status": "success",
+            "reason": "The score is 0.00 because the actual output contains no toxic language or harmful content, as indicated by the absence of any reasons for toxicity."
+          }
+        },
+        "thresholds": {
+          "faithfulness": 0.7,
+          "answer_relevancy": 0.7,
+          "contextual_relevancy": 0.7,
+          "contextual_precision": 0.7,
+          "summarization": 0.7,
+          "bias": 0.8,
+          "hallucination": 0.7,
+          "toxicity": 0.8
+        }
+      },
+      "llm_quality_legacy": {
+        "overall_score": 0.773,
+        "relevance_score": 0.709,
+        "completeness_score": 1.0,
+        "tool_usage_score": 0.5,
+        "structure_score": 1.0
+      },
+      "success": true,
+      "error": null
+    },
+    {
+      "query": "i need a chess to play , it should make with only wood, board should be white and brown, it should be less than 70$",
+      "session_id": "eval-20260117164758",
+      "timestamp": "2026-01-17T16:47:58.690652",
+      "evaluation_types": [
+        "llm_quality"
+      ],
+      "deepeval": {
+        "enabled": true,
+        "overall_score": 0.404,
+        "all_passed": false,
+        "metrics": {
+          "faithfulness": {
+            "score": 0.8888888888888888,
+            "passed": true,
+            "status": "success",
+            "reason": "The score is 0.89 because the actual output introduces criteria like hair/skin type and fragrance-free, which are not mentioned in the retrieval context and are irrelevant to chess sets."
+          },
+          "answer_relevancy": {
+            "score": 0.9411764705882353,
+            "passed": true,
+            "status": "success",
+            "reason": "The score is 0.94 because the answer is highly relevant to the user's request, with only a minor irrelevant statement present. The response mostly addresses the requirements for a wooden chess set under $70 with the specified board colors, but the mention of hair/skin type or fragrance-free options is unrelated, preventing a perfect score."
+          },
+          "contextual_relevancy": {
+            "score": 1.0,
+            "passed": true,
+            "status": "success",
+            "reason": "The score is 1.00 because all the relevant statements directly match the input requirements: wooden chess sets, white and brown boards, and prices under $70. Great job!"
+          },
+          "contextual_precision": {
+            "score": null,
+            "passed": null,
+            "status": "skipped",
+            "reason": "expected_output not provided"
+          },
+          "summarization": {
+            "score": 0.0,
+            "passed": false,
+            "status": "success",
+            "reason": "The score is 0.00 because the summary introduces a significant amount of extra information not present in the original text and fails to answer key questions that the original text addresses, resulting in a summary that does not accurately reflect the original content."
+          },
+          "bias": {
+            "score": 0.0,
+            "passed": true,
+            "status": "success",
+            "reason": "The score is 0.00 because the actual output shows no evidence of bias and maintains a neutral and objective tone throughout."
+          },
+          "hallucination": {
+            "score": 0.0,
+            "passed": true,
+            "status": "success",
+            "reason": "The score is 0.00 because all factual details in the actual output align exactly with the context, and there are no contradictions or hallucinated information."
+          },
+          "toxicity": {
+            "score": 0.0,
+            "passed": true,
+            "status": "success",
+            "reason": "The score is 0.00 because the actual output contains no toxic language or harmful content. Well done on maintaining a respectful and safe response."
+          }
+        },
+        "thresholds": {
+          "faithfulness": 0.7,
+          "answer_relevancy": 0.7,
+          "contextual_relevancy": 0.7,
+          "contextual_precision": 0.7,
+          "summarization": 0.7,
+          "bias": 0.8,
+          "hallucination": 0.7,
+          "toxicity": 0.8
+        }
+      },
+      "llm_quality_legacy": {
+        "overall_score": 0.801,
+        "relevance_score": 0.818,
+        "completeness_score": 1.0,
+        "tool_usage_score": 0.5,
+        "structure_score": 0.9
+      },
+      "success": true,
+      "error": null
+    }
+  ],
+  "failures": []
+}

@@ -1,0 +1,24 @@
+{
+  "description": "Ground truth relevance labels for retrieval evaluation",
+  "version": "1.0",
+  "instructions": "Label products with relevance scores: 0=Not relevant, 1=Somewhat relevant, 2=Relevant, 3=Highly relevant, 4=Perfect match",
+  "queries": [
+    {
+      "query": "Find me wireless headphones under $100",
+      "retrieved_products": [],
+      "relevant_products": {}
+    },
+    {
+      "query": "What are the best laptops for gaming?",
+      "retrieved_products": [],
+      "relevant_products": {}
+    },
+    {
+      "query": "Show me running shoes between $50 and $90",
+      "retrieved_products": [],
+      "relevant_products": {}
+    }
+  ],
+  "note": "This file should be populated with actual retrieved products and relevance labels after running evaluation queries"
+}
+

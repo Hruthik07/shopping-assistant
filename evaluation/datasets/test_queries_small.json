@@ -1,0 +1,24 @@
+{
+  "description": "Small test queries for cost-effective evaluation",
+  "version": "1.0",
+  "queries": [
+    {
+      "category": "product_search",
+      "query": "Find me wireless headphones under $100",
+      "expected_intent": "search",
+      "expected_tools": ["search_products"]
+    },
+    {
+      "category": "product_search",
+      "query": "What are the best laptops for gaming?",
+      "expected_intent": "search",
+      "expected_tools": ["search_products"]
+    },
+    {
+      "category": "price_range",
+      "query": "Show me running shoes between $50 and $90",
+      "expected_intent": "search",
+      "expected_tools": ["search_products"]
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "description": "Complex test queries for evaluation",
+  "version": "1.0",
+  "queries": [
+    {
+      "category": "multi_attribute",
+      "query": "Find me a laptop with 16GB RAM, NVIDIA GPU, and under $1500",
+      "expected_intent": "search",
+      "expected_tools": ["search_products"]
+    },
+    {
+      "category": "comparison",
+      "query": "Compare wireless earbuds from Sony and Bose",
+      "expected_intent": "search",
+      "expected_tools": ["search_products"]
+    },
+    {
+      "category": "product_inquiry",
+      "query": "What's the price of the latest iPhone?",
+      "expected_intent": "search",
+      "expected_tools": ["search_products", "check_product_price"]
+    },
+    {
+      "category": "brand_exclusion",
+      "query": "I want running shoes but not Nike",
+      "expected_intent": "search",
+      "expected_tools": ["search_products"]
+    }
+  ]
+}

@@ -1,0 +1,77 @@
+[
+  {
+    "product_id": "prod_001",
+    "review_id": "rev_001",
+    "rating": 5,
+    "review_text": "Excellent headphones! The noise cancellation is amazing and the battery lasts forever. Very comfortable for long listening sessions.",
+    "reviewer": "John D.",
+    "date": "2024-01-15"
+  },
+  {
+    "product_id": "prod_001",
+    "review_id": "rev_002",
+    "rating": 4,
+    "review_text": "Great sound quality and build. Only downside is they're a bit heavy after wearing for several hours.",
+    "reviewer": "Sarah M.",
+    "date": "2024-01-20"
+  },
+  {
+    "product_id": "prod_002",
+    "review_id": "rev_003",
+    "rating": 5,
+    "review_text": "Love this fitness watch! The GPS is accurate and battery life is impressive. Sleep tracking works really well too.",
+    "reviewer": "Mike T.",
+    "date": "2024-02-01"
+  },
+  {
+    "product_id": "prod_003",
+    "review_id": "rev_004",
+    "rating": 5,
+    "review_text": "Super soft and comfortable. Love that it's organic cotton. Fits true to size.",
+    "reviewer": "Emma L.",
+    "date": "2024-01-10"
+  },
+  {
+    "product_id": "prod_004",
+    "review_id": "rev_005",
+    "rating": 4,
+    "review_text": "Keeps my water cold all day! The design is sleek and it doesn't leak. Great value for money.",
+    "reviewer": "David K.",
+    "date": "2024-02-05"
+  },
+  {
+    "product_id": "prod_005",
+    "review_id": "rev_006",
+    "rating": 4,
+    "review_text": "Really helps with my posture. Easy to adjust and sturdy. My laptop fits perfectly.",
+    "reviewer": "Lisa R.",
+    "date": "2024-01-25"
+  },
+  {
+    "product_id": "prod_006",
+    "review_id": "rev_007",
+    "rating": 5,
+    "review_text": "Best running shoes I've owned! Lightweight, comfortable, and great cushioning. Perfect for my daily runs.",
+    "reviewer": "Tom H.",
+    "date": "2024-02-10"
+  },
+  {
+    "product_id": "prod_007",
+    "review_id": "rev_008",
+    "rating": 4,
+    "review_text": "Convenient wireless charging. Works well with my phone. The LED indicator is helpful.",
+    "reviewer": "Anna B.",
+    "date": "2024-01-30"
+  },
+  {
+    "product_id": "prod_008",
+    "review_id": "rev_009",
+    "rating": 5,
+    "review_text": "Perfect backpack for work! The USB port is genius and there's plenty of space. Very durable too.",
+    "reviewer": "Chris P.",
+    "date": "2024-02-08"
+  }
+]
+
+
+

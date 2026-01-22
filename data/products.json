@@ -1,0 +1,136 @@
+[
+  {
+    "id": "prod_001",
+    "name": "Wireless Bluetooth Headphones",
+    "description": "Premium noise-cancelling wireless headphones with 30-hour battery life, comfortable over-ear design, and crystal-clear sound quality. Perfect for music lovers and professionals.",
+    "category": "electronics",
+    "price": 199.99,
+    "rating": 4.5,
+    "image_url": "https://example.com/headphones.jpg",
+    "specs": {
+      "battery_life": "30 hours",
+      "connectivity": "Bluetooth 5.0",
+      "noise_cancelling": true,
+      "weight": "250g"
+    },
+    "availability": true,
+    "stock": 50
+  },
+  {
+    "id": "prod_002",
+    "name": "Smart Fitness Watch",
+    "description": "Advanced fitness tracking watch with heart rate monitor, GPS, sleep tracking, and 7-day battery life. Water-resistant design perfect for workouts and daily wear.",
+    "category": "electronics",
+    "price": 299.99,
+    "rating": 4.7,
+    "image_url": "https://example.com/watch.jpg",
+    "specs": {
+      "battery_life": "7 days",
+      "water_resistance": "50m",
+      "gps": true,
+      "heart_rate": true
+    },
+    "availability": true,
+    "stock": 30
+  },
+  {
+    "id": "prod_003",
+    "name": "Organic Cotton T-Shirt",
+    "description": "Comfortable 100% organic cotton t-shirt, available in multiple colors. Sustainable and eco-friendly, perfect for everyday wear. Machine washable.",
+    "category": "clothing",
+    "price": 29.99,
+    "rating": 4.3,
+    "image_url": "https://example.com/tshirt.jpg",
+    "specs": {
+      "material": "100% organic cotton",
+      "sizes": ["S", "M", "L", "XL"],
+      "colors": ["Black", "White", "Navy", "Gray"]
+    },
+    "availability": true,
+    "stock": 100
+  },
+  {
+    "id": "prod_004",
+    "name": "Stainless Steel Water Bottle",
+    "description": "Insulated stainless steel water bottle keeps drinks cold for 24 hours or hot for 12 hours. BPA-free, leak-proof design with easy-carry handle.",
+    "category": "accessories",
+    "price": 24.99,
+    "rating": 4.6,
+    "image_url": "https://example.com/bottle.jpg",
+    "specs": {
+      "capacity": "32oz",
+      "insulation": "Double-wall",
+      "material": "Stainless steel"
+    },
+    "availability": true,
+    "stock": 75
+  },
+  {
+    "id": "prod_005",
+    "name": "Laptop Stand Adjustable",
+    "description": "Ergonomic aluminum laptop stand with adjustable height and angle. Improves posture and reduces neck strain. Fits laptops up to 17 inches.",
+    "category": "electronics",
+    "price": 49.99,
+    "rating": 4.4,
+    "image_url": "https://example.com/stand.jpg",
+    "specs": {
+      "material": "Aluminum",
+      "max_laptop_size": "17 inches",
+      "adjustable": true
+    },
+    "availability": true,
+    "stock": 40
+  },
+  {
+    "id": "prod_006",
+    "name": "Running Shoes",
+    "description": "Lightweight running shoes with cushioned sole and breathable mesh upper. Perfect for jogging, walking, and gym workouts. Available in multiple sizes.",
+    "category": "footwear",
+    "price": 89.99,
+    "rating": 4.5,
+    "image_url": "https://example.com/shoes.jpg",
+    "specs": {
+      "sizes": ["7", "8", "9", "10", "11", "12"],
+      "weight": "250g",
+      "cushioning": "High"
+    },
+    "availability": true,
+    "stock": 60
+  },
+  {
+    "id": "prod_007",
+    "name": "Wireless Charging Pad",
+    "description": "Fast wireless charging pad compatible with all Qi-enabled devices. Sleek design with LED indicator. Charges phones, earbuds, and smartwatches.",
+    "category": "electronics",
+    "price": 34.99,
+    "rating": 4.2,
+    "image_url": "https://example.com/charger.jpg",
+    "specs": {
+      "charging_speed": "15W",
+      "compatibility": "Qi-enabled devices",
+      "led_indicator": true
+    },
+    "availability": true,
+    "stock": 80
+  },
+  {
+    "id": "prod_008",
+    "name": "Backpack with USB Port",
+    "description": "Durable backpack with built-in USB charging port, multiple compartments, and padded laptop sleeve. Perfect for students and professionals.",
+    "category": "accessories",
+    "price": 59.99,
+    "rating": 4.6,
+    "image_url": "https://example.com/backpack.jpg",
+    "specs": {
+      "capacity": "30L",
+      "usb_port": true,
+      "laptop_sleeve": true,
+      "water_resistant": true
+    },
+    "availability": true,
+    "stock": 45
+  }
+]
+
+
+
