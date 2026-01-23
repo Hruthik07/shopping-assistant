@@ -15,12 +15,13 @@ from typing import Any, Dict, Optional
 
 from src.analytics.logger import logger
 
-
 FILE_DEBUG_LOG_ENABLED = os.getenv("FILE_DEBUG_LOG", "false").lower() == "true"
 FILE_DEBUG_LOG_PATH = os.getenv("FILE_DEBUG_LOG_PATH", r"c:\agentic_ai\.cursor\debug.log")
 
 
-def file_debug_log(location: str, message: str, data: Dict[str, Any], hypothesis_id: Optional[str] = None):
+def file_debug_log(
+    location: str, message: str, data: Dict[str, Any], hypothesis_id: Optional[str] = None
+):
     """Write a structured debug line to a file (opt-in)."""
     if not FILE_DEBUG_LOG_ENABLED:
         return
@@ -37,4 +38,3 @@ def file_debug_log(location: str, message: str, data: Dict[str, Any], hypothesis
     except Exception as e:
         # Never let debug logging break request handling
         logger.debug(f"[file_debug_log] failed: {e}")
-

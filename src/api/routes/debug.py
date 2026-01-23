@@ -6,7 +6,6 @@ from src.utils.config import settings
 
 import hashlib
 
-
 router = APIRouter(prefix="/api/debug", tags=["debug"])
 
 
@@ -19,7 +18,9 @@ async def get_system_prompt(
 
     Disabled in production unless DEBUG_PROMPTS=true is set.
     """
-    if getattr(settings, "production_mode", False) and (str(getattr(settings, "debug_prompts", "false")).lower() != "true"):
+    if getattr(settings, "production_mode", False) and (
+        str(getattr(settings, "debug_prompts", "false")).lower() != "true"
+    ):
         raise HTTPException(status_code=404, detail="Not found")
 
     agent = get_shopping_agent()
@@ -34,4 +35,3 @@ async def get_system_prompt(
         "merged_prompt_sha256": hashlib.sha256(prompt.encode("utf-8", errors="ignore")).hexdigest(),
         "merged_prompt": prompt,
     }
-

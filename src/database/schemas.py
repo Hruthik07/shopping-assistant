@@ -1,4 +1,5 @@
 """Pydantic schemas for API requests/responses."""
+
 from pydantic import BaseModel, EmailStr
 from typing import Optional, List, Dict, Any
 from datetime import datetime
@@ -17,7 +18,7 @@ class UserCreate(UserBase):
 class UserResponse(UserBase):
     id: int
     created_at: datetime
-    
+
     class Config:
         from_attributes = True
 
@@ -32,7 +33,7 @@ class SessionResponse(BaseModel):
     session_id: str
     user_id: Optional[int]
     created_at: datetime
-    
+
     class Config:
         from_attributes = True
 
@@ -50,7 +51,7 @@ class ConversationResponse(BaseModel):
     agent_response: str
     tools_used: Optional[List[str]] = None
     created_at: datetime
-    
+
     class Config:
         from_attributes = True
 
@@ -93,7 +94,7 @@ class CartItemResponse(BaseModel):
     quantity: int
     price: float
     added_at: datetime
-    
+
     class Config:
         from_attributes = True
 
@@ -116,9 +117,6 @@ class UserPreferenceResponse(BaseModel):
     price_range_max: Optional[float]
     preferences: Optional[Dict[str, Any]]
     created_at: datetime
-    
+
     class Config:
         from_attributes = True
-
-
-

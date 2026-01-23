@@ -1,4 +1,5 @@
 """Product data source implementations."""
+
 from src.services.data_sources.serper_source import SerperDataSource
 from src.services.data_sources.amazon_source import AmazonDataSource
 from src.services.data_sources.ebay_source import eBayDataSource
@@ -10,5 +11,5 @@ __all__ = [
     "AmazonDataSource",
     "eBayDataSource",
     "WalmartDataSource",
-    "BestBuyDataSource"
+    "BestBuyDataSource",
 ]

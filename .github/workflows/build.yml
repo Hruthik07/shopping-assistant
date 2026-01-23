@@ -25,7 +25,27 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
       
+      - name: Set up test environment
+        env:
+          ANTHROPIC_API_KEY: test-key-for-ci
+          OPENAI_API_KEY: test-key-for-ci
+          SERPER_API_KEY: test-key-for-ci
+          DATABASE_URL: sqlite:///./test_shopping_assistant.db
+          CACHE_ENABLED: false
+          LANGFUSE_ENABLED: false
+          DEEPEVAL_ENABLED: false
+        run: |
+          echo "Test environment configured"
+      
       - name: Verify Python imports
+        env:
+          ANTHROPIC_API_KEY: test-key-for-ci
+          OPENAI_API_KEY: test-key-for-ci
+          SERPER_API_KEY: test-key-for-ci
+          DATABASE_URL: sqlite:///./test_shopping_assistant.db
+          CACHE_ENABLED: false
+          LANGFUSE_ENABLED: false
+          DEEPEVAL_ENABLED: false
         run: |
           python -c "import src.api.main; print('✓ Imports successful')"
           python -c "import src.agent.shopping_agent; print('✓ Agent imports successful')"
@@ -44,6 +64,14 @@ jobs:
           echo "✓ Docker build successful"
       
       - name: Test application startup
+        env:
+          ANTHROPIC_API_KEY: test-key-for-ci
+          OPENAI_API_KEY: test-key-for-ci
+          SERPER_API_KEY: test-key-for-ci
+          DATABASE_URL: sqlite:///./test_shopping_assistant.db
+          CACHE_ENABLED: false
+          LANGFUSE_ENABLED: false
+          DEEPEVAL_ENABLED: false
         run: |
           python -c "
           import sys

@@ -1,4 +1,5 @@
 """API request/response schemas."""
+
 from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
 
@@ -32,4 +33,3 @@ class CartItemResponse(BaseModel):
     quantity: int
     price: Optional[float] = None
     product_name: Optional[str] = None
-

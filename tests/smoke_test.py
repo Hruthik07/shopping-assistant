@@ -1,4 +1,5 @@
 """Smoke tests to validate critical functionality after bug fixes."""
+
 import asyncio
 import sys
 from pathlib import Path
@@ -18,7 +19,7 @@ async def test_shopping_agent_initialization():
     print("\n[TEST] ShoppingAgent Initialization...")
     try:
         agent = ShoppingAgent()
-        assert hasattr(agent, '_llm_cache'), "_llm_cache not initialized"
+        assert hasattr(agent, "_llm_cache"), "_llm_cache not initialized"
         assert isinstance(agent._llm_cache, dict), "_llm_cache should be a dict"
         # Note: _llm_cache may contain models after initialization
         print("[OK] ShoppingAgent initialized successfully")
@@ -34,8 +35,9 @@ async def test_chat_endpoint_start_time():
     try:
         # Import and check the function source
         import inspect
+
         source = inspect.getsource(chat)
-        assert 'start_time = time.time()' in source, "start_time not initialized"
+        assert "start_time = time.time()" in source, "start_time not initialized"
         print("[OK] start_time variable found in chat endpoint")
         return True
     except Exception as e:
@@ -49,19 +51,19 @@ def test_debug_code_removed():
     try:
         agent_file = Path(__file__).parent.parent / "src" / "agent" / "shopping_agent.py"
         content = agent_file.read_text(encoding="utf-8", errors="replace")
-        
+
         # Check for debug instrumentation markers
         debug_markers = [
             "# #region debug instrumentation",
             "# #endregion",
-            "c:\\agentic_ai\\.cursor\\debug.log"
+            "c:\\agentic_ai\\.cursor\\debug.log",
         ]
-        
+
         found_markers = []
         for marker in debug_markers:
             if marker in content:
                 found_markers.append(marker)
-        
+
         if found_markers:
             print(f"[WARN] Found debug markers: {found_markers}")
             return False
@@ -82,6 +84,7 @@ async def test_imports():
         from src.utils.cache import cache_service
         from src.analytics.performance_monitor import performance_monitor
         from src.analytics.error_tracker import error_tracker
+
         print("[OK] All critical imports successful")
         return True
     except Exception as e:
@@ -94,6 +97,7 @@ async def test_health_check():
     print("\n[TEST] Health Check Endpoint...")
     try:
         import httpx
+
         async with httpx.AsyncClient(timeout=5.0) as client:
             response = await client.get("http://localhost:3565/api/health")
             if response.status_code == 200:
@@ -113,24 +117,24 @@ async def run_all_tests():
     print("=" * 60)
     print("SMOKE TESTS - Post Bug Fix Validation")
     print("=" * 60)
-    
+
     results = []
-    
+
     # Test 1: Imports
     results.append(await test_imports())
-    
+
     # Test 2: ShoppingAgent initialization
     results.append(await test_shopping_agent_initialization())
-    
+
     # Test 3: Chat endpoint start_time
     results.append(await test_chat_endpoint_start_time())
-    
+
     # Test 4: Debug code removal
     results.append(test_debug_code_removed())
-    
+
     # Test 5: Health check (optional)
     results.append(await test_health_check())
-    
+
     # Summary
     print("\n" + "=" * 60)
     print("TEST SUMMARY")
@@ -138,7 +142,7 @@ async def run_all_tests():
     passed = sum(results)
     total = len(results)
     print(f"Passed: {passed}/{total}")
-    
+
     if passed == total:
         print("[OK] ALL TESTS PASSED - System ready for deployment")
         return 0

@@ -1,4 +1,5 @@
 """Migration script to add price_history table and indexes."""
+
 from sqlalchemy import text
 from src.database.db import engine
 from src.analytics.logger import logger
@@ -12,11 +13,11 @@ def upgrade():
             SELECT name FROM sqlite_master 
             WHERE type='table' AND name='price_history'
         """))
-        
+
         if result.fetchone():
             logger.info("price_history table already exists, skipping creation")
             return
-        
+
         # Create price_history table (SQLite-compatible)
         conn.execute(text("""
             CREATE TABLE IF NOT EXISTS price_history (
@@ -43,7 +44,7 @@ def upgrade():
                 product_metadata TEXT
             )
         """))
-        
+
         # Create indexes for performance (with IF NOT EXISTS for idempotency)
         indexes = [
             ("idx_price_history_product_id", "product_id"),
@@ -54,9 +55,9 @@ def upgrade():
             ("idx_price_history_ean", "ean"),
             ("idx_price_history_sku", "sku"),
             ("idx_price_history_product_name", "product_name"),
-            ("idx_price_history_product_timestamp", "product_id, timestamp")
+            ("idx_price_history_product_timestamp", "product_id, timestamp"),
         ]
-        
+
         for idx_name, idx_columns in indexes:
             try:
                 conn.execute(text(f"""
@@ -65,7 +66,7 @@ def upgrade():
             except Exception as e:
                 # Index might already exist, continue
                 logger.debug(f"Index {idx_name} creation: {e}")
-        
+
         logger.info("Successfully created price_history table and indexes")
 
 

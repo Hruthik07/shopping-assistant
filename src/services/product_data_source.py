@@ -1,11 +1,12 @@
 """Abstract base class for product data sources."""
+
 from abc import ABC, abstractmethod
 from typing import List, Dict, Any, Optional
 
 
 class ProductDataSource(ABC):
     """Abstract interface for product data sources."""
-    
+
     @abstractmethod
     async def search_products(
         self,
@@ -13,35 +14,35 @@ class ProductDataSource(ABC):
         num_results: int = 10,
         min_price: Optional[float] = None,
         max_price: Optional[float] = None,
-        category: Optional[str] = None
+        category: Optional[str] = None,
     ) -> List[Dict[str, Any]]:
         """Search for products.
-        
+
         Args:
             query: Search query
             num_results: Maximum number of results
             min_price: Minimum price filter
             max_price: Maximum price filter
             category: Category filter
-            
+
         Returns:
             List of normalized product dictionaries
         """
         pass
-    
+
     @abstractmethod
     def get_source_name(self) -> str:
         """Get the name of this data source."""
         pass
-    
+
     @abstractmethod
     def is_available(self) -> bool:
         """Check if this data source is available (API keys configured)."""
         pass
-    
+
     def normalize_product(self, product: Dict[str, Any]) -> Dict[str, Any]:
         """Normalize product data to standard format.
-        
+
         Standard format:
         {
             "id": str,  # Unique product identifier

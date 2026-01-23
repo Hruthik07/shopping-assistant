@@ -1,4 +1,5 @@
 """Shopping cart API routes."""
+
 from fastapi import APIRouter, HTTPException, Depends, Query
 from sqlalchemy.orm import Session
 from typing import Optional
@@ -15,23 +16,20 @@ router = APIRouter(prefix="/api/cart", tags=["cart"])
 async def add_item(
     item: CartItemCreate,
     user_id: Optional[int] = None,  # In real app, get from auth token
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """Add item to cart."""
     try:
         if not user_id:
             raise HTTPException(status_code=401, detail="Authentication required")
-        
+
         result = await add_to_cart_tool.execute(
-            product_id=item.product_id,
-            quantity=item.quantity,
-            user_id=user_id,
-            db=db
+            product_id=item.product_id, quantity=item.quantity, user_id=user_id, db=db
         )
-        
+
         if not result.get("success"):
             raise HTTPException(status_code=400, detail=result.get("message", "Failed to add item"))
-        
+
         return result
     except HTTPException:
         raise
@@ -45,8 +43,10 @@ async def add_item(
 
 @router.get("/")
 async def get_cart(
-    user_id: Optional[int] = Query(None, description="User ID (in real app, derive from auth token)"),
-    db: Session = Depends(get_db)
+    user_id: Optional[int] = Query(
+        None, description="User ID (in real app, derive from auth token)"
+    ),
+    db: Session = Depends(get_db),
 ):
     """Get shopping cart."""
     try:
@@ -66,22 +66,20 @@ async def get_cart(
 @router.delete("/items/{item_id}")
 async def remove_item(
     item_id: int,
-    user_id: Optional[int] = Query(None, description="User ID (in real app, derive from auth token)"),
-    db: Session = Depends(get_db)
+    user_id: Optional[int] = Query(
+        None, description="User ID (in real app, derive from auth token)"
+    ),
+    db: Session = Depends(get_db),
 ):
     """Remove item from cart."""
     try:
         if not user_id:
             raise HTTPException(status_code=401, detail="Authentication required")
-        result = await remove_from_cart_tool.execute(
-            user_id=user_id,
-            cart_item_id=item_id,
-            db=db
-        )
-        
+        result = await remove_from_cart_tool.execute(user_id=user_id, cart_item_id=item_id, db=db)
+
         if not result.get("success"):
             raise HTTPException(status_code=404, detail=result.get("message", "Item not found"))
-        
+
         return result
     except HTTPException:
         raise
@@ -90,4 +88,3 @@ async def remove_item(
             raise e
         logger.error(f"Error removing from cart: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
-

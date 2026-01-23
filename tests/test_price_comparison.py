@@ -1,4 +1,5 @@
 """Tests for price comparison engine."""
+
 import pytest
 from src.services.price_comparison import price_comparator
 
@@ -11,12 +12,12 @@ def test_price_comparison_single_retailer():
             "name": "Test Product",
             "price": 50.0,
             "shipping_cost": 5.0,
-            "retailer": "Store A"
+            "retailer": "Store A",
         }
     ]
-    
+
     compared = price_comparator.compare_prices(products)
-    
+
     assert len(compared) == 1
     assert "price_comparison" in compared[0]
     assert compared[0]["price_comparison"]["retailer_count"] == 1
@@ -33,30 +34,15 @@ def test_price_comparison_multiple_retailers():
             "shipping_cost": 5.0,
             "retailer": "Store A",
             "retailer_options": [
-                {
-                    "retailer": "Store A",
-                    "price": 50.0,
-                    "shipping_cost": 5.0,
-                    "total_cost": 55.0
-                },
-                {
-                    "retailer": "Store B",
-                    "price": 45.0,
-                    "shipping_cost": 10.0,
-                    "total_cost": 55.0
-                },
-                {
-                    "retailer": "Store C",
-                    "price": 40.0,
-                    "shipping_cost": 0.0,
-                    "total_cost": 40.0
-                }
-            ]
+                {"retailer": "Store A", "price": 50.0, "shipping_cost": 5.0, "total_cost": 55.0},
+                {"retailer": "Store B", "price": 45.0, "shipping_cost": 10.0, "total_cost": 55.0},
+                {"retailer": "Store C", "price": 40.0, "shipping_cost": 0.0, "total_cost": 40.0},
+            ],
         }
     ]
-    
+
     compared = price_comparator.compare_prices(products)
-    
+
     assert len(compared) == 1
     product = compared[0]
     assert "price_comparison" in product
@@ -70,12 +56,9 @@ def test_price_comparison_multiple_retailers():
 def test_calculate_total_cost():
     """Test total cost calculation."""
     total = price_comparator.calculate_total_cost(
-        price=100.0,
-        shipping_cost=10.0,
-        tax=5.0,
-        discount=15.0
+        price=100.0, shipping_cost=10.0, tax=5.0, discount=15.0
     )
-    
+
     assert total == 100.0  # 100 + 10 + 5 - 15
 
 
@@ -88,7 +71,7 @@ def test_rank_by_customer_value():
             "price": 100.0,
             "shipping_cost": 10.0,
             "rating": 4.5,
-            "reviews": 100
+            "reviews": 100,
         },
         {
             "id": "prod2",
@@ -96,7 +79,7 @@ def test_rank_by_customer_value():
             "price": 80.0,
             "shipping_cost": 5.0,
             "rating": 4.0,
-            "reviews": 50
+            "reviews": 50,
         },
         {
             "id": "prod3",
@@ -104,12 +87,12 @@ def test_rank_by_customer_value():
             "price": 120.0,
             "shipping_cost": 0.0,
             "rating": 5.0,
-            "reviews": 200
-        }
+            "reviews": 200,
+        },
     ]
-    
+
     ranked = price_comparator.rank_by_customer_value(products)
-    
+
     # Should be sorted by total cost (price + shipping)
     assert ranked[0]["id"] == "prod2"  # 85.0 total
     assert ranked[1]["id"] == "prod1"  # 110.0 total

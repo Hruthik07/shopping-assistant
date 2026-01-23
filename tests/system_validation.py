@@ -1,4 +1,5 @@
 """Comprehensive system validation test."""
+
 import asyncio
 import sys
 import json
@@ -9,7 +10,6 @@ import time
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import httpx
-
 
 BASE_URL = "http://localhost:3565"
 TIMEOUT = 30.0
@@ -92,17 +92,13 @@ async def test_chat_endpoint_basic():
     print("\n[TEST] Chat Endpoint - Basic Query...")
     try:
         async with httpx.AsyncClient(timeout=60.0) as client:
-            payload = {
-                "message": "Find me wireless headphones under $100"
-            }
+            payload = {"message": "Find me wireless headphones under $100"}
             start_time = time.time()
             response = await client.post(
-                f"{BASE_URL}/api/chat/",
-                json=payload,
-                headers={"Content-Type": "application/json"}
+                f"{BASE_URL}/api/chat/", json=payload, headers={"Content-Type": "application/json"}
             )
             elapsed = time.time() - start_time
-            
+
             if response.status_code == 200:
                 data = response.json()
                 print(f"[OK] Chat endpoint responded in {elapsed:.2f}s")
@@ -110,17 +106,17 @@ async def test_chat_endpoint_basic():
                 print(f"    - Products found: {len(data.get('products', []))}")
                 print(f"    - Tools used: {len(data.get('tools_used', []))}")
                 print(f"    - Request ID: {data.get('request_id', 'N/A')}")
-                
+
                 # Check for critical fields
-                if 'response' in data:
+                if "response" in data:
                     print("[OK] Response field present")
-                if 'request_id' in data:
+                if "request_id" in data:
                     print("[OK] Request ID present")
-                if 'latency_breakdown' in data:
+                if "latency_breakdown" in data:
                     print("[OK] Latency breakdown present")
-                if 'cache_stats' in data:
+                if "cache_stats" in data:
                     print("[OK] Cache stats present")
-                
+
                 return True
             else:
                 print(f"[FAIL] Chat endpoint returned status {response.status_code}")
@@ -129,6 +125,7 @@ async def test_chat_endpoint_basic():
     except Exception as e:
         print(f"[FAIL] Chat endpoint failed: {e}")
         import traceback
+
         traceback.print_exc()
         return False
 
@@ -140,11 +137,8 @@ async def test_chat_endpoint_error_handling():
         async with httpx.AsyncClient(timeout=TIMEOUT) as client:
             # Test with empty message (should be rejected)
             payload = {"message": ""}
-            response = await client.post(
-                f"{BASE_URL}/api/chat/",
-                json=payload
-            )
-            
+            response = await client.post(f"{BASE_URL}/api/chat/", json=payload)
+
             if response.status_code in [400, 422]:
                 print("[OK] Empty message properly rejected")
                 return True
@@ -219,7 +213,7 @@ async def run_all_tests():
     print("=" * 70)
     print(f"Testing server at: {BASE_URL}")
     print("Waiting for server to be ready...")
-    
+
     # Wait for server to start
     max_retries = 10
     for i in range(max_retries):
@@ -235,24 +229,24 @@ async def run_all_tests():
             else:
                 print("[FAIL] Server did not start in time")
                 return 1
-    
+
     results = []
-    
+
     # Core health checks
     results.append(await test_health_endpoint())
     results.append(await test_liveness())
     results.append(await test_readiness())
-    
+
     # Metrics and monitoring
     results.append(await test_metrics_endpoint())
     results.append(await test_cache_stats())
     results.append(await test_error_stats())
-    
+
     # API functionality
     results.append(await test_root_endpoint())
     results.append(await test_chat_endpoint_basic())
     results.append(await test_chat_endpoint_error_handling())
-    
+
     # Summary
     print("\n" + "=" * 70)
     print("TEST SUMMARY")
@@ -260,7 +254,7 @@ async def run_all_tests():
     passed = sum(results)
     total = len(results)
     print(f"Passed: {passed}/{total}")
-    
+
     if passed == total:
         print("[OK] ALL TESTS PASSED - System is running correctly!")
         return 0

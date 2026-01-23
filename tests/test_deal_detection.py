@@ -1,4 +1,5 @@
 """Tests for deal detection service."""
+
 import pytest
 import asyncio
 from datetime import datetime, timedelta
@@ -17,11 +18,11 @@ async def test_deal_detection_no_history():
         "price": 50.0,
         "shipping_cost": 5.0,
         "retailer": "Test Store",
-        "source": "test"
+        "source": "test",
     }
-    
+
     result = await deal_detector._analyze_product_deals(product)
-    
+
     # Should not crash, should add deal_info
     assert "deal_info" in result
     # No history means no deal detected initially
@@ -32,7 +33,7 @@ async def test_deal_detection_no_history():
 async def test_deal_detection_price_drop():
     """Test deal detection with price drop."""
     product_id = "test_product_2"
-    
+
     # Create price history with higher prices
     db = next(get_db())
     try:
@@ -45,12 +46,12 @@ async def test_deal_detection_price_drop():
                 price=100.0,
                 total_cost=100.0,
                 timestamp=datetime.utcnow() - timedelta(days=days_ago),
-                source="test"
+                source="test",
             )
             db.add(old_price)
-        
+
         db.commit()
-        
+
         # Now test with lower current price
         product = {
             "id": product_id,
@@ -58,16 +59,16 @@ async def test_deal_detection_price_drop():
             "price": 70.0,  # 30% drop
             "shipping_cost": 0.0,
             "retailer": "Test Store",
-            "source": "test"
+            "source": "test",
         }
-        
+
         result = await deal_detector._analyze_product_deals(product)
-        
+
         assert "deal_info" in result
         # Should detect significant price drop
         assert result["deal_info"]["is_deal"] == True
         assert result["deal_info"]["savings_percent"] > 0
-        
+
     finally:
         # Cleanup
         db.query(PriceHistory).filter(PriceHistory.product_id == product_id).delete()
@@ -77,18 +78,14 @@ async def test_deal_detection_price_drop():
 
 def test_is_best_deal():
     """Test best deal detection."""
-    product = {
-        "id": "prod1",
-        "price": 50.0,
-        "shipping_cost": 5.0
-    }
-    
+    product = {"id": "prod1", "price": 50.0, "shipping_cost": 5.0}
+
     comparison_products = [
         {"price": 60.0, "shipping_cost": 10.0},
         {"price": 55.0, "shipping_cost": 5.0},
-        {"price": 70.0, "shipping_cost": 0.0}
+        {"price": 70.0, "shipping_cost": 0.0},
     ]
-    
+
     is_best = deal_detector.is_best_deal(product, comparison_products)
     # prod1 total: 55, others: 70, 60, 70 - so prod1 is best
     assert is_best == True
@@ -111,7 +108,7 @@ async def test_deal_detection_multiple_products():
             "price": 50.0,
             "shipping_cost": 5.0,
             "retailer": "Store A",
-            "source": "test"
+            "source": "test",
         },
         {
             "id": "prod2",
@@ -119,12 +116,12 @@ async def test_deal_detection_multiple_products():
             "price": 100.0,
             "shipping_cost": 10.0,
             "retailer": "Store B",
-            "source": "test"
-        }
+            "source": "test",
+        },
     ]
-    
+
     results = await deal_detector.detect_deals(products)
-    
+
     assert len(results) == 2
     for product in results:
         assert "deal_info" in product

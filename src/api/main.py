@@ -1,4 +1,5 @@
 """FastAPI main application."""
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -20,19 +21,19 @@ async def lifespan(app: FastAPI):
     """Application lifespan manager."""
     # Startup
     logger.info("Starting application...")
-    
+
     # Validate configuration
     config_status = validate_config()
     if not config_status["valid"]:
         logger.error("Configuration validation failed - some features may not work")
-    
+
     # Initialize database
     try:
         init_db()
         logger.info("Database initialized")
     except Exception as e:
         logger.error(f"Error initializing database: {e}")
-    
+
     # Initialize Redis cache
     if settings.cache_enabled:
         try:
@@ -40,7 +41,7 @@ async def lifespan(app: FastAPI):
             logger.info("Cache service initialized")
         except Exception as e:
             logger.warning(f"Cache service initialization failed: {e}")
-    
+
     # Validate API keys based on provider
     provider = settings.llm_provider.lower()
     if provider == "anthropic":
@@ -55,14 +56,14 @@ async def lifespan(app: FastAPI):
             logger.info(f"Using OpenAI provider with model: {settings.llm_model}")
     else:
         logger.warning(f"Unknown LLM provider: {provider}")
-    
+
     logger.info("Application startup complete")
-    
+
     yield
-    
+
     # Shutdown
     logger.info("Shutting down application...")
-    
+
     # Disconnect cache
     if settings.cache_enabled:
         try:
@@ -70,17 +71,22 @@ async def lifespan(app: FastAPI):
         except Exception as e:
             logger.warning(f"Error disconnecting cache: {e}")
 
+
 # Create FastAPI app
 app = FastAPI(
     title="E-Commerce Shopping Assistant API",
     description="AI-powered shopping assistant with MCP tools and real-time product search",
     version="1.0.0",
-    lifespan=lifespan
+    lifespan=lifespan,
 )
 
 # CORS middleware
-cors_origins = settings.cors_origins.split(",") if hasattr(settings, 'cors_origins') and settings.cors_origins else ["*"]
-if hasattr(settings, 'production_mode') and settings.production_mode and "*" in cors_origins:
+cors_origins = (
+    settings.cors_origins.split(",")
+    if hasattr(settings, "cors_origins") and settings.cors_origins
+    else ["*"]
+)
+if hasattr(settings, "production_mode") and settings.production_mode and "*" in cors_origins:
     logger.warning("CORS is set to allow all origins in production. Consider restricting this.")
 app.add_middleware(
     CORSMiddleware,
@@ -103,19 +109,16 @@ if frontend_path.exists():
         css_file = frontend_path / "styles.css"
         if css_file.exists():
             return FileResponse(str(css_file), media_type="text/css")
-    
+
     @app.get("/app.js")
     async def serve_js():
         js_file = frontend_path / "app.js"
         if js_file.exists():
             return FileResponse(str(js_file), media_type="application/javascript")
 
+
 # Rate limiting middleware
-app.add_middleware(
-    RateLimitMiddleware,
-    calls=settings.rate_limit_per_minute,
-    period=60
-)
+app.add_middleware(RateLimitMiddleware, calls=settings.rate_limit_per_minute, period=60)
 
 # Logging middleware
 app.add_middleware(LoggingMiddleware)
@@ -132,6 +135,7 @@ app.include_router(debug.router)
 # WebSocket endpoint
 app.websocket("/ws")(websocket_endpoint)
 
+
 # Root endpoint - serve frontend if available, otherwise API info
 @app.get("/", response_class=FileResponse)
 async def root():
@@ -142,11 +146,10 @@ async def root():
         return FileResponse(str(index_file))
     # Fallback to API info if frontend not found
     from fastapi.responses import JSONResponse
-    return JSONResponse({
-        "message": "E-Commerce Shopping Assistant API",
-        "version": "1.0.0",
-        "docs": "/docs"
-    })
+
+    return JSONResponse(
+        {"message": "E-Commerce Shopping Assistant API", "version": "1.0.0", "docs": "/docs"}
+    )
 
 
 # Health check endpoints are now in health.py router
@@ -154,10 +157,5 @@ async def root():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(
-        "src.api.main:app",
-        host=settings.api_host,
-        port=settings.api_port,
-        reload=True
-    )
 
+    uvicorn.run("src.api.main:app", host=settings.api_host, port=settings.api_port, reload=True)
