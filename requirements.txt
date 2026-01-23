@@ -61,7 +61,7 @@ pytest-cov==4.1.0
 # Evaluation & Monitoring
 deepeval>=2.0.0
 langfuse>=2.0.0
-pytest-deepeval>=0.1.0  # Optional pytest integration
+# pytest-deepeval>=0.1.0  # Removed: not available for Python 3.11+, use deepeval directly
 
 # AWS Integration (for Bedrock deployment)
 boto3>=1.34.0  # AWS SDK for CloudWatch, Cost Explorer, Bedrock
