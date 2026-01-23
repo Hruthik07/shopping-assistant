@@ -1,0 +1,40 @@
+[tool.black]
+line-length = 100
+target-version = ['py311']
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | __pycache__
+  | venv
+  | \.venv
+  | build
+  | dist
+  | chroma_db
+  | logs
+  | evaluation/reports
+)/
+'''
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
+exclude = [
+    'venv/',
+    '.venv/',
+    'build/',
+    'dist/',
+    'chroma_db/',
+    'logs/',
+    'evaluation/reports/'
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"
+asyncio_mode = "auto"

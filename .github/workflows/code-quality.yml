@@ -1,0 +1,33 @@
+name: Code Quality
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install code quality tools
+        run: |
+          pip install black flake8 mypy
+      
+      - name: Check formatting with Black
+        run: black --check src/ tests/ || (echo "❌ Code formatting check failed. Run 'black src/ tests/' to fix." && exit 1)
+      
+      - name: Lint with Flake8
+        run: flake8 src/ tests/ || (echo "❌ Linting failed. Fix the issues above." && exit 1)
+      
+      - name: Type check with MyPy
+        run: mypy src/ --ignore-missing-imports || (echo "⚠️ Type checking found issues (non-blocking)" && exit 0)

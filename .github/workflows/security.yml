@@ -1,0 +1,38 @@
+name: Security Scan
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    - cron: '0 0 * * 0'  # Weekly scan on Sunday at midnight UTC
+
+jobs:
+  security:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install pip-audit
+        run: pip install pip-audit
+      
+      - name: Audit dependencies for vulnerabilities
+        run: |
+          pip-audit -r requirements.txt --format json --output pip-audit-report.json || true
+          pip-audit -r requirements.txt
+      
+      - name: Upload security report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pip-audit-report
+          path: pip-audit-report.json
+          retention-days: 30

@@ -1,0 +1,23 @@
+[flake8]
+max-line-length = 100
+exclude = 
+    .git,
+    __pycache__,
+    venv,
+    .venv,
+    build,
+    dist,
+    *.egg-info,
+    .github,
+    chroma_db,
+    logs,
+    evaluation/reports
+ignore = 
+    E203,  # whitespace before ':'
+    E501,  # line too long (handled by black)
+    W503,  # line break before binary operator
+    E402,  # module level import not at top of file
+    F401   # imported but unused (handled by other tools)
+per-file-ignores =
+    __init__.py:F401
+max-complexity = 15

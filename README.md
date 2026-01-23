@@ -1,5 +1,10 @@
 # E-Commerce Shopping Assistant Agent
 
+![CI](https://github.com/Hruthik07/shopping-assistant/workflows/CI/badge.svg)
+![Code Quality](https://github.com/Hruthik07/shopping-assistant/workflows/Code%20Quality/badge.svg)
+![Security Scan](https://github.com/Hruthik07/shopping-assistant/workflows/Security%20Scan/badge.svg)
+![Build Verification](https://github.com/Hruthik07/shopping-assistant/workflows/Build%20Verification/badge.svg)
+
 A production-ready AI-powered shopping assistant that combines **RAG (Retrieval-Augmented Generation)**, **MCP (Model Context Protocol)**, and modern AI engineering practices. This agent helps customers find products, answer questions, get recommendations, and complete purchases using real-time product data from e-commerce APIs.
 
 ## 🚀 Features

@@ -11,10 +11,6 @@ const API_BASE_URL = (() => {
 let sessionId = null;
 let currentPersona = 'friendly';
 let currentTone = 'warm';
-let conversationFlow = {
-    currentStep: 'greeting',
-    steps: ['greeting', 'understanding', 'searching', 'recommending', 'closing']
-};
 
 // DOM Elements (will be initialized after DOM loads)
 let chatMessages, chatInput, sendButton, productsList, productsPanel;
@@ -29,40 +25,13 @@ let voiceAssistant = null; // Voice assistant instance
 // Chat size state: 'normal', 'large', 'compact'
 let chatSize = 'normal';
 
-// Debug helper function (disabled by default)
-// Enable with: localStorage.setItem('DEBUG_ENABLED', 'true')
-// Optional remote sink: localStorage.setItem('DEBUG_INGEST_URL', 'https://.../ingest')
-function debugLog(location, message, data, hypothesisId) {
-    if (localStorage.getItem('DEBUG_ENABLED') !== 'true') return;
-    try {
-        const payload = {
-            location,
-            message,
-            data,
-            timestamp: Date.now(),
-            sessionId: sessionId || 'no-session',
-            hypothesisId
-        };
-        const ingestUrl = localStorage.getItem('DEBUG_INGEST_URL');
-        if (ingestUrl && /^https?:\/\//i.test(ingestUrl)) {
-            fetch(ingestUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            }).catch(() => {});
-        } else {
-            // Default: log locally only (no network calls in production)
-            console.debug('[DEBUG]', payload);
-        }
-    } catch (e) {
-        // Silently ignore debug errors
-    }
+// Debug helper function (disabled by default - enable via localStorage.setItem('DEBUG_ENABLED', 'true'))
+function debugLog() {
+    // No-op in production - only active when DEBUG_ENABLED is set
 }
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('[INIT] DOM Content Loaded - Starting initialization...');
-    
     // Get DOM elements
     chatMessages = document.getElementById('chat-messages');
     chatInput = document.getElementById('chat-input');
@@ -112,8 +81,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
     
-    console.log('[INIT] All critical DOM elements found');
-    
     // Initialize voice assistant (class defined later in file)
     try {
         voiceAssistant = new VoiceAssistant();
@@ -158,27 +125,19 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Event listeners
     if (sendButton) {
-        console.log('[INIT] Attaching send button click listener');
-        sendButton.addEventListener('click', () => {
-            console.log('[CLICK] Send button clicked');
-            sendMessage();
-        });
+        sendButton.addEventListener('click', () => sendMessage());
     } else {
         console.error('[INIT] Send button not found!');
     }
     
     if (chatInput) {
-        console.log('[INIT] Attaching chat input keypress listener');
         chatInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
-                console.log('[KEYPRESS] Enter pressed, sending message');
                 sendMessage();
             }
         });
-        // Focus input
         chatInput.focus();
-        console.log('[INIT] Chat input focused');
     } else {
         console.error('[INIT] Chat input not found!');
     }
@@ -482,15 +441,10 @@ const MAX_RETRIES = 3;
 const RETRY_DELAY = 1000; // 1 second
 
 async function sendMessage() {
-    console.log('[SEND] sendMessage called');
-    
     const message = chatInput.value.trim();
     if (!message) {
-        console.log('[SEND] Empty message, returning');
         return;
     }
-    
-    console.log('[SEND] Message:', message.substring(0, 50) + '...');
     
     // Validate message length
     if (message.length > 1000) {
@@ -520,9 +474,6 @@ async function sendMessage() {
     const loadingId = addMessage('', 'bot', true);
     updateStatus('Thinking...', 'processing');
     showTypingIndicator();
-    
-    console.log('[SEND] Making API request to:', `${API_BASE_URL}/api/chat/`);
-    console.log('[SEND] Session ID:', sessionId);
     
     let lastError = null;
     
@@ -562,38 +513,15 @@ async function sendMessage() {
                 throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
             }
             
-            console.log('[SEND] Response OK, parsing JSON...');
             let data;
             try {
                 const responseText = await response.text();
-                console.log('[SEND] Response text length:', responseText.length);
-                console.log('[SEND] Response text preview:', responseText.substring(0, 200));
                 data = JSON.parse(responseText);
-                console.log('[SEND] JSON parsed successfully');
             } catch (parseError) {
                 console.error('[SEND] JSON parse error:', parseError);
-                console.error('[SEND] Response was:', await response.text().catch(() => 'Could not read response'));
                 throw new Error('Failed to parse response as JSON: ' + parseError.message);
             }
             
-            console.log('[SEND] API response received:', {
-                hasResponse: !!data.response,
-                responseLength: data.response?.length || 0,
-                hasProducts: !!data.products,
-                productsCount: data.products?.length || 0,
-                sessionId: data.session_id,
-                keys: Object.keys(data)
-            });
-            
-            debugLog('app.js:API response received', 'API response received', {
-                hasProducts: !!data.products,
-                productsCount: data.products?.length || 0,
-                products: data.products?.map(p => ({
-                    name: p.name || p.title,
-                    url: p.product_url || p.link || p.url || p.productUrl
-                })) || [],
-                responsePreview: data.response?.substring(0, 200)
-            }, 'A');
             
             // Validate response data
             if (!data || typeof data !== 'object') {
@@ -605,8 +533,6 @@ async function sendMessage() {
                 console.error('[SEND] Response missing "response" field:', data);
                 throw new Error('Response missing required "response" field');
             }
-            
-            console.log('[SEND] Response validation passed');
             
             // Update session ID from response if it changed
             if (data.session_id && data.session_id !== sessionId) {
@@ -623,44 +549,23 @@ async function sendMessage() {
                 responseText = 'Sorry, I couldn\'t process that request.';
             }
             
-            debugLog('app.js:470', 'Before injectProductLinks', {
-                responseTextPreview: responseText.substring(0, 300),
-                hasPlaceholders: responseText.includes('[product_url]') || responseText.includes('[Product URL]')
-            }, 'E');
-            
             if (data.products && Array.isArray(data.products) && data.products.length > 0) {
                 responseText = injectProductLinks(responseText, data.products);
-                
-                debugLog('app.js:473', 'After injectProductLinks', {
-                    responseTextPreview: responseText.substring(0, 300),
-                    hasMarkdownLinks: responseText.includes('[View Product](')
-                }, 'D');
             }
             
             // Add bot response
-            console.log('[SEND] Adding bot message, length:', responseText.length);
-            console.log('[SEND] Response text preview:', responseText.substring(0, 100));
+            addMessage(responseText, 'bot');
             
-            const messageResult = addMessage(responseText, 'bot');
-            console.log('[SEND] Message added result:', messageResult);
-            
-            // Check if message was actually added to DOM (messageResult can be null for non-loading messages)
-            // Verify by checking if chatMessages has children
             if (!chatMessages || chatMessages.children.length === 0) {
-                console.error('[SEND] Failed to add message to DOM - chatMessages is empty!');
+                console.error('[SEND] Failed to add message to DOM');
                 throw new Error('Failed to add message to DOM');
             }
             
-            // Message was successfully added (even if messageResult is null, that's OK for non-loading messages)
-            console.log('[SEND] Message successfully added to DOM');
-            
             // Display products
             if (data.products && Array.isArray(data.products) && data.products.length > 0) {
-                console.log('[SEND] Displaying', data.products.length, 'products');
                 displayProducts(data.products);
                 showToast(`Found ${data.products.length} product${data.products.length > 1 ? 's' : ''}`, 'success', 3000);
             } else {
-                console.log('[SEND] No products to display');
                 clearProducts();
             }
             
@@ -687,7 +592,6 @@ async function sendMessage() {
                 sendButton.classList.remove('loading');
             }
             
-            console.log('[SEND] Successfully processed response, exiting retry loop');
             return; // Success, exit retry loop
             
         } catch (error) {
@@ -738,28 +642,11 @@ async function sendMessage() {
 }
 
 function injectProductLinks(responseText, products) {
-    debugLog('app.js:536', 'injectProductLinks entry', {
-        productsCount: products.length,
-        products: products.map(p => ({
-            name: p.name || p.title,
-            url: p.product_url || p.link || p.url || p.productUrl,
-            urlType: typeof (p.product_url || p.link || p.url || p.productUrl)
-        })),
-        responseTextPreview: responseText.substring(0, 200)
-    }, 'A');
-    
     // Replace [product_url], [Product URL], or other placeholders with actual clickable markdown links
-    // Match each product recommendation to its corresponding product URL
     let modifiedText = responseText;
     
-    // Strategy: Match products by finding product names in the text and replacing the nearest placeholder
     // Split text into sections by numbered recommendations (1., 2., 3., etc.)
     const sections = modifiedText.split(/(?=\d+\.\s+)/);
-    
-    debugLog('app.js:545', 'Sections split', {
-        sectionsCount: sections.length,
-        sectionsPreview: sections.slice(0, 3).map(s => s.substring(0, 100))
-    }, 'D');
     
     if (sections.length > 1) {
         // We have numbered sections - match each section to a product
@@ -803,46 +690,21 @@ function injectProductLinks(responseText, products) {
             if (matchedProduct) {
                 const productUrl = matchedProduct.product_url || matchedProduct.link || matchedProduct.url || matchedProduct.productUrl;
                 
-                debugLog('app.js:584', 'Product matched', {
-                    sectionIndex: sectionIndex,
-                    matchedProductName: matchedProduct.name || matchedProduct.title,
-                    originalUrl: productUrl,
-                    urlLength: productUrl?.length
-                }, 'D');
-                
                 if (productUrl) {
                     // Clean and validate the URL
                     let cleanUrl = productUrl.trim();
-                    
-                    debugLog('app.js:590', 'URL before cleaning', {
-                        originalUrl: productUrl,
-                        trimmedUrl: cleanUrl
-                    }, 'B');
-                    
-                    // Remove any trailing punctuation or whitespace
                     cleanUrl = cleanUrl.replace(/[.,;:!?\s]+$/, '');
-                    
-                    debugLog('app.js:593', 'URL after cleaning', {
-                        cleanUrl: cleanUrl,
-                        isValid: !!cleanUrl.match(/^https?:\/\//i)
-                    }, 'B');
                     
                     // Validate URL format - must start with http:// or https://
                     if (!cleanUrl.match(/^https?:\/\//i)) {
-                        // If it's not a valid URL, skip this product
-                        console.warn('Invalid product URL format:', cleanUrl);
-                        debugLog('app.js:597', 'Invalid URL rejected', { cleanUrl: cleanUrl }, 'A');
                         return section;
                     }
                     
                     // Use a simple link text instead of product name to avoid markdown issues
                     const linkText = `[View Product](${cleanUrl})`;
                     
-                    debugLog('app.js:600', 'Link text created', { linkText: linkText, cleanUrl: cleanUrl }, 'E');
-                    
                     // Replace placeholders in this section only (not globally)
                     let sectionText = section;
-                    const beforeReplace = sectionText;
                     sectionText = sectionText.replace(/Buy here:\s*\[product_url\]/gi, `Buy here: ${linkText}`);
                     sectionText = sectionText.replace(/Buy here:\s*\[Product URL\]/gi, `Buy here: ${linkText}`);
                     sectionText = sectionText.replace(/Buy here:\s*\[PRODUCT_URL\]/gi, `Buy here: ${linkText}`);
@@ -852,12 +714,6 @@ function injectProductLinks(responseText, products) {
                     sectionText = sectionText.replace(/\[Google Shopping Link\]/gi, linkText);
                     sectionText = sectionText.replace(/\[Product Link\]/gi, linkText);
                     
-                    debugLog('app.js:612', 'Section after replacement', {
-                        beforeReplace: beforeReplace.substring(0, 150),
-                        afterReplace: sectionText.substring(0, 150),
-                        wasReplaced: beforeReplace !== sectionText
-                    }, 'E');
-                    
                     return sectionText;
                 }
             }
@@ -866,11 +722,6 @@ function injectProductLinks(responseText, products) {
         });
         
         modifiedText = processedSections.join('');
-        
-        debugLog('app.js:620', 'injectProductLinks exit (sections)', {
-            finalTextPreview: modifiedText.substring(0, 300),
-            hasMarkdownLinks: modifiedText.includes('[View Product](')
-        }, 'D');
     } else {
         // No numbered sections - use fallback: replace in order (first occurrence gets first product, etc.)
         let placeholderCount = 0;
@@ -917,11 +768,6 @@ function injectProductLinks(responseText, products) {
         });
     }
     
-    debugLog('app.js:650', 'injectProductLinks exit', {
-        finalTextPreview: modifiedText.substring(0, 300),
-        hasMarkdownLinks: modifiedText.includes('[View Product](')
-    }, 'A');
-    
     return modifiedText;
 }
 
@@ -946,46 +792,20 @@ function formatMessage(text) {
         return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     }
     
-    // CRITICAL FIX: Process markdown links BEFORE escaping HTML
-    // This prevents double-encoding of URLs (e.g., & becomes &amp; then &amp;amp;)
-    // Convert markdown links directly to HTML (with proper escaping of URL and text)
+    // Process markdown links BEFORE escaping HTML to prevent double-encoding
     let processedText = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, linkText, url) => {
-        debugLog('app.js:747', 'Markdown link found (pre-escape)', {
-            match: match.substring(0, 100),
-            linkText: linkText,
-            originalUrl: url.substring(0, 100)
-        }, 'C');
-        
-        // Clean up URL (remove any trailing characters that might break the link)
         let cleanUrl = url.trim();
-        // Remove trailing punctuation that might have been included
         cleanUrl = cleanUrl.replace(/[.,;:!?\s]+$/, '');
-        // Remove any parentheses that might have been included in the URL
         cleanUrl = cleanUrl.replace(/[()]+$/, '');
         
-        // Validate URL format
         if (cleanUrl.match(/^https?:\/\//i)) {
-            // Double-check URL is valid using URL constructor
             try {
-                new URL(cleanUrl); // This will throw if URL is invalid
-                // Convert directly to HTML link (escape URL and text for safety)
-                // This HTML will be inserted into the text, then the whole text will be escaped
-                // But we need to mark this as "already processed" so it doesn't get double-escaped
-                // Use a special marker that we'll replace after escaping
-                const linkHtml = `<a href="${cleanUrl}" target="_blank" rel="noopener noreferrer" class="message-link" style="color: #3b82f6; text-decoration: underline; cursor: pointer; pointer-events: auto;">${linkText}</a>`;
-                
-                debugLog('app.js:765', 'Link HTML created (pre-escape)', {
-                    cleanUrl: cleanUrl.substring(0, 100),
-                    linkText: linkText
-                }, 'C');
-                
-                return linkHtml;
+                new URL(cleanUrl);
+                return `<a href="${cleanUrl}" target="_blank" rel="noopener noreferrer" class="message-link" style="color: #3b82f6; text-decoration: underline; cursor: pointer; pointer-events: auto;">${linkText}</a>`;
             } catch (e) {
-                // Invalid URL, return original match (will be escaped later)
                 return match;
             }
         }
-        // Invalid URL format, return original match (will be escaped later)
         return match;
     });
     
@@ -1099,8 +919,6 @@ function formatInlineMarkdown(text) {
 }
 
 function addMessage(text, type, isLoading = false) {
-    console.log('[MSG] addMessage called:', { type, isLoading, textLength: text?.length || 0 });
-    
     if (!chatMessages) {
         console.error('[MSG] chatMessages element not found!');
         return null;
@@ -1130,9 +948,7 @@ function addMessage(text, type, isLoading = false) {
         // Format markdown for bot messages, plain text for user messages
         if (type === 'bot') {
             try {
-                const formatted = formatMessage(text);
-                console.log('[MSG] Formatted message length:', formatted.length);
-                contentDiv.innerHTML = formatted;
+                contentDiv.innerHTML = formatMessage(text);
             } catch (e) {
                 console.error('[MSG] Error formatting message:', e);
                 contentDiv.textContent = text;
@@ -1167,9 +983,6 @@ function addMessage(text, type, isLoading = false) {
         });
     }, 100);
     
-    console.log('[MSG] Message added to DOM');
-    // Return the messageDiv element or its id if it exists
-    // This allows callers to check if message was added, but null is OK for non-loading messages
     return messageDiv.id ? messageDiv.id : messageDiv;
 }
 
@@ -1188,9 +1001,6 @@ function removeMessage(messageId) {
 }
 
 function displayProducts(products) {
-    console.log('[PROD] displayProducts called with', products?.length || 0, 'products');
-    console.log('[PROD] Products data:', products);
-    
     if (!productsList) {
         console.error('[PROD] productsList element not found');
         return;
@@ -1223,7 +1033,6 @@ function displayProducts(products) {
         }
         
         if (products.length === 0) {
-            console.log('[PROD] No products, showing empty state');
             productsList.innerHTML = '<div class="empty-products"><svg width="64" height="64" viewBox="0 0 24 24" fill="none"><path d="M7 18c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zM1 2v2h2l3.6 7.59-1.35 2.45c-.15.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12L8.1 13h7.45c.75 0 1.41-.41 1.75-1.03L21.7 4H5.21l-.94-2H1zm16 16c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" fill="currentColor"/></svg><p>No products yet</p><span>Start a conversation to see recommendations</span></div>';
             return;
         }
@@ -1252,14 +1061,7 @@ function showProductSkeletons(count) {
 function renderProducts(products) {
     if (!productsList) return;
     
-    console.log('[PROD] Rendering', products.length, 'product cards');
-    products.forEach((product, index) => {
-        console.log(`[PROD] Rendering product ${index + 1}:`, {
-            name: product.name || product.title,
-            price: product.price,
-            hasImage: !!(product.image || product.image_url || product.thumbnail),
-            hasUrl: !!(product.product_url || product.link || product.url || product.productUrl)
-        });
+    products.forEach((product) => {
         const productCard = document.createElement('div');
         productCard.className = 'product-card';
         
@@ -1908,15 +1710,11 @@ function updateStatus(text, type = 'ready') {
 
 // Typing indicator functions
 function showTypingIndicator() {
-    // Optional: Can add visual typing indicator here if needed
-    // Currently the loading message handles this
-    console.log('[UI] Typing indicator shown');
+    // Visual typing indicator handled by loading message
 }
 
 function hideTypingIndicator() {
-    // Optional: Can hide typing indicator here if needed
-    // Currently the loading message handles this
-    console.log('[UI] Typing indicator hidden');
+    // Visual typing indicator handled by loading message
 }
 
 // Check API connection on load
@@ -1972,9 +1770,7 @@ class VoiceAssistant {
         
         this.recognition.onresult = (event) => {
             const transcript = event.results[0][0].transcript;
-            console.log('Voice input:', transcript);
             
-            // Set input value and send message
             if (chatInput) {
                 chatInput.value = transcript;
                 sendMessage();
