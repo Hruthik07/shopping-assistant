@@ -20,7 +20,7 @@ services:
       context: .
       dockerfile: docker/Dockerfile
     ports:
-      - "8000:8000"
+      - "3565:3565"
     environment:
       - DATABASE_URL=sqlite:///./shopping_assistant.db
       - REDIS_URL=redis://redis:6379/0
