@@ -48,7 +48,8 @@ jobs:
           LANGFUSE_ENABLED: false
           DEEPEVAL_ENABLED: false
         run: |
-          pytest tests/ -v --cov=src --cov-report=xml --cov-report=html
+          # Run only pytest-compatible tests (exclude smoke_test.py and system_validation.py)
+          pytest tests/ -v --cov=src --cov-report=xml --cov-report=html --ignore=tests/smoke_test.py --ignore=tests/system_validation.py --ignore=tests/load_test.py
       
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
