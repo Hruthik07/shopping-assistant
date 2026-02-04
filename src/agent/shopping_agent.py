@@ -1459,7 +1459,6 @@ Remember: Help users find the perfect products within their budget while maintai
             except Exception:
                 price_range = None
 
-            min_price = price_range[0] if price_range else None
             max_price = price_range[1] if price_range else None
 
             header = "Here are a few solid options I found"
