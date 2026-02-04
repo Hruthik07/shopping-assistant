@@ -1311,11 +1311,60 @@ Remember: Help users find the perfect products within their budget while maintai
         url_pattern = r"https?://[^\s\)]+"
         urls = re.findall(url_pattern, response_text)
 
-        # Check if there are supposed to be URLs but only placeholders exist
-        if "[product_url]" in response_text or "[Product URL]" in response_text:
-            logger.warning(
-                "Response contains [product_url] placeholder - this should be replaced with actual URL"
-            )
+        # Validate found URLs
+        if urls:
+            # Check for suspicious URL patterns that might be placeholders or hallucinations
+            suspicious_patterns = [
+                r"example\.com",
+                r"placeholder",
+                r"\[.*\]",  # URLs containing brackets (likely placeholders)
+                r"product_url",
+                r"website_link",
+            ]
+            valid_urls = []
+            for url in urls:
+                is_suspicious = any(
+                    re.search(pattern, url, re.IGNORECASE) for pattern in suspicious_patterns
+                )
+                if is_suspicious:
+                    logger.warning(
+                        f"Suspicious URL pattern detected in response: {url[:100]}. "
+                        "This may be a placeholder or hallucinated URL."
+                    )
+                else:
+                    # Basic URL validation: check it has a valid domain
+                    try:
+                        from urllib.parse import urlparse
+
+                        parsed = urlparse(url)
+                        if parsed.netloc and "." in parsed.netloc:
+                            valid_urls.append(url)
+                        else:
+                            logger.warning(f"Invalid URL format detected: {url[:100]}")
+                    except Exception as e:
+                        logger.debug(f"Error parsing URL {url[:100]}: {e}")
+
+            if valid_urls:
+                logger.debug(f"Found {len(valid_urls)} valid URLs in response")
+            elif urls:
+                logger.warning(
+                    f"Found {len(urls)} URL-like patterns but none passed validation. "
+                    "Response may contain placeholders or invalid URLs."
+                )
+        else:
+            # Check if there are supposed to be URLs but none were found
+            if "[product_url]" in response_text or "[Product URL]" in response_text:
+                logger.warning(
+                    "Response contains [product_url] placeholder - this should be replaced with actual URL"
+                )
+            # Check if response mentions products but has no URLs (potential issue)
+            if "product" in response_text.lower() and (
+                "buy" in response_text.lower() or "purchase" in response_text.lower()
+            ):
+                logger.debug(
+                    "Response mentions products and buying but no URLs found. "
+                    "This may be acceptable if products are listed separately."
+                )
 
         # ANTI-HALLUCINATION: Detect potential hallucinated information
         # Check for specific store addresses (common hallucination)
