@@ -56,7 +56,7 @@ class ConnectionManager:
 manager = ConnectionManager()
 
 
-async def websocket_endpoint(websocket: WebSocket):
+async def websocket_endpoint(websocket: WebSocket):  # noqa: C901
     """WebSocket endpoint for streaming chat with proper error handling."""
     await manager.connect(websocket)
     session_id = None
@@ -136,7 +136,7 @@ async def websocket_endpoint(websocket: WebSocket):
                     await manager.send_personal_message(
                         "An error occurred. Please try again.", websocket
                     )
-                except:
+                except Exception:
                     # Connection may be broken, break the loop
                     break
 

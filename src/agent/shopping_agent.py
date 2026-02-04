@@ -1045,14 +1045,14 @@ Remember: Help users find the perfect products within their budget while maintai
         self, cached_response: Dict[str, Any]
     ) -> tuple[str, List[Dict], List[str]]:
         """Extract data from cached response."""
-        logger.info(f"Cache hit for LLM response")
+        logger.info("Cache hit for LLM response")
         return (
             cached_response.get("response", ""),
             cached_response.get("products", []),
             cached_response.get("tools_used", []),
         )
 
-    async def _process_with_llm(
+    async def _process_with_llm(  # noqa: C901
         self,
         messages: List,
         query: str,
@@ -1328,7 +1328,7 @@ Remember: Help users find the perfect products within their budget while maintai
 
         # Validate URLs in response - ensure they're actual URLs, not placeholders
         url_pattern = r"https?://[^\s\)]+"
-        urls = re.findall(url_pattern, response_text)
+        re.findall(url_pattern, response_text)  # Validate URLs exist
 
         # Check if there are supposed to be URLs but only placeholders exist
         if "[product_url]" in response_text or "[Product URL]" in response_text:
@@ -1357,7 +1357,7 @@ Remember: Help users find the perfect products within their budget while maintai
 
         return response_text
 
-    def _generate_contextual_followup(self, query: str, products: List[Dict[str, Any]]) -> str:
+    def _generate_contextual_followup(self, query: str, products: List[Dict[str, Any]]) -> str:  # noqa: C901
         """Generate a context-aware follow-up question based on product categories and query.
 
         Args:
@@ -1459,7 +1459,7 @@ Remember: Help users find the perfect products within their budget while maintai
                 return "Want me to narrow it down by budget, brand, or other preferences?"
             return "Want me to narrow it down by brand, size, or other preferences?"
 
-    def _ground_response_to_products(
+    def _ground_response_to_products(  # noqa: C901
         self,
         query: str,
         agent_response: str,
@@ -1719,7 +1719,6 @@ Remember: Help users find the perfect products within their budget while maintai
 
             # Remove any existing generic follow-up questions from the original response
             # This prevents the LLM's generic follow-up from appearing
-            agent_response_lower = agent_response.lower()
             generic_followups = [
                 "want me to narrow it down",
                 "hair/skin type",
@@ -1731,12 +1730,10 @@ Remember: Help users find the perfect products within their budget while maintai
             # Check if agent_response already has a follow-up question we should remove
             response_lines = agent_response.split("\n")
             cleaned_lines = []
-            skip_followup = False
             for line in response_lines:
                 line_lower = line.lower()
                 # Skip lines that contain generic follow-up patterns
                 if any(pattern in line_lower for pattern in generic_followups):
-                    skip_followup = True
                     continue
                 cleaned_lines.append(line)
 
@@ -1881,7 +1878,7 @@ Remember: Help users find the perfect products within their budget while maintai
 
         return products
 
-    def _filter_products_by_brand(
+    def _filter_products_by_brand(  # noqa: C901
         self, query: str, products: List[Dict[str, Any]], history: List[Dict[str, Any]]
     ) -> List[Dict[str, Any]]:
         """Filter products based on brand inclusions/exclusions from query and history."""

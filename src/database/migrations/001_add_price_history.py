@@ -10,7 +10,7 @@ def upgrade():
     with engine.begin() as conn:
         # Check if table already exists
         result = conn.execute(text("""
-            SELECT name FROM sqlite_master 
+            SELECT name FROM sqlite_master
             WHERE type='table' AND name='price_history'
         """))
 

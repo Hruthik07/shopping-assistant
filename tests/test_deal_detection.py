@@ -88,7 +88,7 @@ def test_is_best_deal():
 
     is_best = deal_detector.is_best_deal(product, comparison_products)
     # prod1 total: 55, others: 70, 60, 70 - so prod1 is best
-    assert is_best == True
+    assert is_best is True
 
 
 def test_deal_thresholds():

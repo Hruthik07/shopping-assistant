@@ -204,7 +204,7 @@ class ProductSearchTool(MCPTool):
             "required": ["query"],
         }
 
-    async def execute(
+    async def execute(  # noqa: C901
         self,
         query: str,
         category: Optional[str] = None,

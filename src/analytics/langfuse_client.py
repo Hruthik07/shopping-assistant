@@ -192,7 +192,7 @@ class LangfuseClient:
                 return self.client.score_current_trace(name=name, value=value, comment=comment)
             else:
                 logger.warning(
-                    f"Langfuse client has no score method (create_score or score_current_trace)"
+                    "Langfuse client has no score method (create_score or score_current_trace)"
                 )
                 return None
         except Exception as e:

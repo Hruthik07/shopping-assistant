@@ -97,9 +97,7 @@ app.add_middleware(
 )
 
 # Serve frontend static files (must be before API routes)
-from pathlib import Path
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+# Note: Path, StaticFiles, and FileResponse are already imported at the top
 
 frontend_path = Path(__file__).parent.parent.parent / "frontend"
 if frontend_path.exists():
