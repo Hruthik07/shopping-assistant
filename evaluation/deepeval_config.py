@@ -1,8 +1,18 @@
 """DeepEval configuration and setup."""
 import os
 from typing import Optional
-from deepeval import evaluate
-from deepeval.models import GPTModel, DeepEvalBaseLLM
+
+# Conditional import - deepeval may not be compatible with all LangChain versions
+try:
+    from deepeval import evaluate
+    from deepeval.models import GPTModel, DeepEvalBaseLLM
+    DEEPEVAL_AVAILABLE = True
+except (ImportError, ModuleNotFoundError) as e:
+    DEEPEVAL_AVAILABLE = False
+    GPTModel = None
+    DeepEvalBaseLLM = None
+    evaluate = None
+
 from src.utils.config import settings
 from src.analytics.logger import logger
 
@@ -12,15 +22,24 @@ class DeepEvalConfig:
     
     def __init__(self):
         """Initialize DeepEval configuration."""
-        self.enabled = settings.deepeval_enabled
+        self.enabled = settings.deepeval_enabled and DEEPEVAL_AVAILABLE
         self.api_key = settings.deepeval_api_key or os.getenv("DEEPEVAL_API_KEY")
         self.evaluation_model: Optional[DeepEvalBaseLLM] = None
+        
+        if not DEEPEVAL_AVAILABLE:
+            logger.warning("DeepEval is not available (import error). DeepEval features will be disabled.")
+            self.enabled = False
+            return
         
         if self.enabled:
             self._setup_evaluation_model()
     
     def _setup_evaluation_model(self):
         """Set up the evaluation model (judge model) for DeepEval."""
+        if not DEEPEVAL_AVAILABLE or GPTModel is None:
+            self.enabled = False
+            return
+            
         try:
             # Use GPT-4o-mini for cost-effective evaluation (20x cheaper than GPT-4!)
             # Only use GPT - no fallback to other models

@@ -2,18 +2,35 @@
 import asyncio
 import os
 from typing import Dict, Any, List, Optional
-from deepeval import evaluate
-from deepeval.test_case import LLMTestCase
-from deepeval.metrics import (
-    FaithfulnessMetric,  # Similar to Groundedness
-    AnswerRelevancyMetric,
-    ContextualRelevancyMetric,
-    ContextualPrecisionMetric,
-    SummarizationMetric,
-    BiasMetric,
-    HallucinationMetric,  # Similar to Coherence/Tone
-    ToxicityMetric  # Safety metric
-)
+
+# Conditional import - deepeval may not be compatible with all LangChain versions
+try:
+    from deepeval import evaluate
+    from deepeval.test_case import LLMTestCase
+    from deepeval.metrics import (
+        FaithfulnessMetric,  # Similar to Groundedness
+        AnswerRelevancyMetric,
+        ContextualRelevancyMetric,
+        ContextualPrecisionMetric,
+        SummarizationMetric,
+        BiasMetric,
+        HallucinationMetric,  # Similar to Coherence/Tone
+        ToxicityMetric  # Safety metric
+    )
+    DEEPEVAL_AVAILABLE = True
+except (ImportError, ModuleNotFoundError) as e:
+    DEEPEVAL_AVAILABLE = False
+    evaluate = None
+    LLMTestCase = None
+    FaithfulnessMetric = None
+    AnswerRelevancyMetric = None
+    ContextualRelevancyMetric = None
+    ContextualPrecisionMetric = None
+    SummarizationMetric = None
+    BiasMetric = None
+    HallucinationMetric = None
+    ToxicityMetric = None
+
 from evaluation.deepeval_config import deepeval_config, METRIC_THRESHOLDS
 from src.analytics.logger import logger
 
@@ -23,6 +40,11 @@ class DeepEvalEvaluator:
     
     def __init__(self):
         """Initialize DeepEval evaluator."""
+        if not DEEPEVAL_AVAILABLE:
+            self.enabled = False
+            logger.warning("DeepEval is not available (import error). DeepEval features will be disabled.")
+            return
+        
         self.enabled = deepeval_config.is_enabled()
         if not self.enabled:
             logger.warning("DeepEval is disabled or not configured")
@@ -45,8 +67,8 @@ class DeepEvalEvaluator:
         Returns:
             Dictionary with metric scores and pass/fail status
         """
-        if not self.enabled:
-            return {"enabled": False, "error": "DeepEval not enabled"}
+        if not DEEPEVAL_AVAILABLE or not self.enabled:
+            return {"enabled": False, "error": "DeepEval not available or not enabled"}
         
         try:
             # Format context properly for DeepEval
@@ -261,8 +283,8 @@ class DeepEvalEvaluator:
         Returns:
             Dictionary with aggregate results
         """
-        if not self.enabled:
-            return {"enabled": False, "error": "DeepEval not enabled"}
+        if not DEEPEVAL_AVAILABLE or not self.enabled:
+            return {"enabled": False, "error": "DeepEval not available or not enabled"}
         
         results = []
         for test_case in test_cases:
