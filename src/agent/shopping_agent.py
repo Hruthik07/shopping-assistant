@@ -1715,7 +1715,7 @@ Remember: Help users find the perfect products within their budget while maintai
 
         return products
 
-    def _filter_products_by_brand(
+    def _filter_products_by_brand(  # noqa: C901
         self, query: str, products: List[Dict[str, Any]], history: List[Dict[str, Any]]
     ) -> List[Dict[str, Any]]:
         """Filter products based on brand inclusions/exclusions from query and history."""
