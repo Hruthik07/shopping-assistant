@@ -1322,16 +1322,17 @@ Remember: Help users find the perfect products within their budget while maintai
             ]
             valid_urls = []
             for url in urls:
-                # Check for suspicious patterns (excluding bracket pattern for now)
+                # Check for suspicious patterns
                 is_suspicious = any(
                     re.search(pattern, url, re.IGNORECASE) for pattern in suspicious_patterns
                 )
 
                 # Check for placeholder-like brackets more specifically
-                # Only flag if brackets appear at start/end or contain placeholder-like text
+                # Only flag if URL starts with bracket (definitely a placeholder like [product_url])
+                # Don't flag URLs ending with ] as they may have bracket-based query params
                 if not is_suspicious:
-                    # Check if URL starts or ends with brackets (definitely a placeholder)
-                    if url.strip().startswith("[") or url.strip().endswith("]"):
+                    # Check if URL starts with bracket (definitely a placeholder)
+                    if url.strip().startswith("["):
                         is_suspicious = True
                     # Check if brackets contain placeholder-like text (not query params)
                     # Look for brackets with text like "Link", "URL", "Product", etc.
@@ -1340,6 +1341,7 @@ Remember: Help users find the perfect products within their budget while maintai
                     )
                     if re.search(bracket_placeholder_pattern, url, re.IGNORECASE):
                         is_suspicious = True
+
                 if is_suspicious:
                     logger.warning(
                         f"Suspicious URL pattern detected in response: {url[:100]}. "
@@ -1375,12 +1377,19 @@ Remember: Help users find the perfect products within their budget while maintai
                     "This may be acceptable if products are listed separately."
                 )
 
-        # Check for [product_url] placeholders unconditionally
+        # Check for [product_url] placeholders unconditionally and replace them
         # This must run regardless of whether URLs were found, as a response
         # could contain both valid URLs and placeholders
         if "[product_url]" in response_text or "[Product URL]" in response_text:
-            logger.warning(
-                "Response contains [product_url] placeholder - this should be replaced with actual URL"
+            logger.warning("Response contains [product_url] placeholder - replacing with notice")
+            # Replace placeholders with a notice (consistent with other placeholder handling)
+            response_text = response_text.replace(
+                "[product_url]",
+                "Product link not available - please use web_search to find the actual URL",
+            )
+            response_text = response_text.replace(
+                "[Product URL]",
+                "Product link not available - please use web_search to find the actual URL",
             )
 
         # ANTI-HALLUCINATION: Detect potential hallucinated information
