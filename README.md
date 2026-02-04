@@ -1,198 +1,221 @@
-# E-Commerce Shopping Assistant Agent
+# 🛍️ AI Shopping Assistant
 
 ![CI](https://github.com/Hruthik07/shopping-assistant/workflows/CI/badge.svg)
 ![Code Quality](https://github.com/Hruthik07/shopping-assistant/workflows/Code%20Quality/badge.svg)
 ![Security Scan](https://github.com/Hruthik07/shopping-assistant/workflows/Security%20Scan/badge.svg)
 ![Build Verification](https://github.com/Hruthik07/shopping-assistant/workflows/Build%20Verification/badge.svg)
 
-A production-ready AI-powered shopping assistant that combines **RAG (Retrieval-Augmented Generation)**, **MCP (Model Context Protocol)**, and modern AI engineering practices. This agent helps customers find products, answer questions, get recommendations, and complete purchases using real-time product data from e-commerce APIs.
+> An intelligent shopping companion that understands what you're looking for, finds the best deals across multiple retailers, and helps you make informed purchasing decisions—all through natural conversation.
 
-## 🚀 Features
+---
 
-### Core Features
-- **Real-Time Product Search**: Integrates with Google Shopping API (via Serper) for live product data
-- **Multi-Source Aggregation**: Query multiple retailers (Amazon, eBay, Walmart, Best Buy) in parallel
-- **RAG System**: Advanced retrieval with hybrid search (semantic + keyword) across products, reviews, and FAQs
-- **MCP Tools**: 8+ tools including product search, price checking, web search, image analysis, and cart operations
-- **Conversation Memory**: Tracks user preferences and conversation history
-- **Multi-Step Workflows**: Intelligent agent workflows for complex shopping tasks
-- **FastAPI Backend**: RESTful API with WebSocket support for streaming
+## What Problem Does This Solve?
 
-### Deal Finding & Price Comparison
-- **Price Comparison**: Compare prices across multiple retailers automatically
-- **Deal Detection**: Identify price drops, best prices, and seasonal deals
-- **Price History Tracking**: Track price changes over time to detect deals
-- **Coupon Integration**: Match available coupons and promo codes to products
-- **Customer-First Ranking**: Transparent ranking algorithm that prioritizes best deals (no affiliate bias)
-- **Deal Badges**: Visual indicators for "Best Price", "Save X%", "Limited Time", etc.
+Shopping online can be overwhelming. You're faced with:
+- **Too many options** across dozens of websites
+- **Price hunting** that requires manually checking multiple retailers
+- **Information overload** from conflicting reviews and specifications
+- **Hidden deals** that you might miss
+- **Time-consuming research** to find the right product within your budget
 
-### Production & Monitoring
-- **Production Ready**: Docker deployment, rate limiting, logging, and analytics
-- **Performance Optimized**: 30% latency reduction, parallelized operations, optimized context size
-- **Comprehensive Monitoring**: Health checks, metrics endpoints, error tracking, cache statistics
-- **Deal Analytics**: Track deal detection rates, savings, and price comparison effectiveness
-- **Background Jobs**: Automated price tracking and data cleanup
-- **Voice Assistant**: Browser-based speech-to-text and text-to-speech support
+This AI Shopping Assistant solves all of these problems by acting as your personal shopping expert. It:
+- **Searches multiple retailers simultaneously** (Amazon, eBay, Walmart, Best Buy, and more)
+- **Compares prices automatically** and highlights the best deals
+- **Understands natural language**—just tell it what you need in plain English
+- **Remembers your preferences** and previous conversations
+- **Detects price drops and deals** automatically
+- **Provides personalized recommendations** based on your budget and requirements
+- **Speaks to you** with voice input and output support
 
-## 🏗️ Architecture
+Think of it as having a knowledgeable shopping assistant who never sleeps, has access to every online store, and always has your best interests in mind.
 
-```
-User Query → Agent Orchestrator → [RAG System | MCP Tools | Memory] → Multi-step Reasoning → Response
-```
+---
 
-### Core Components
+## 🎯 Core Features
 
-1. **RAG System**: Vector database (ChromaDB) with hybrid search
-2. **MCP Integration**: Tool registry with 8+ tools
-3. **Agent**: LangChain-based agent with tool calling
-4. **Memory**: Conversation history and user preferences
-5. **API**: FastAPI with REST and WebSocket endpoints
+### Intelligent Product Discovery
+- **Multi-Source Search**: Queries Google Shopping, Amazon, eBay, Walmart, and Best Buy in parallel
+- **RAG-Powered Retrieval**: Uses advanced Retrieval-Augmented Generation to find relevant products from a knowledge base of reviews, FAQs, and product descriptions
+- **Hybrid Search**: Combines semantic understanding with keyword matching for precise results
+- **Real-Time Data**: Always shows current prices, availability, and product information
 
-## 📋 Prerequisites
+### Smart Deal Finding
+- **Automatic Price Comparison**: Compares prices across retailers instantly
+- **Deal Detection**: Identifies price drops, seasonal sales, and limited-time offers
+- **Price History Tracking**: Monitors price changes over time to catch the best deals
+- **Deal Badges**: Visual indicators for "Best Price", "Save X%", "Limited Time", and more
+- **Customer-First Ranking**: Transparent algorithm that prioritizes the best deals—no affiliate bias
 
-- Python 3.11+
-- OpenAI API key (for LLM) or Anthropic API key
-- Serper API key (for Google Shopping) - [Get it here](https://serper.dev)
-- Tavily API key (optional, for web search) - [Get it here](https://tavily.com)
+### Conversational AI
+- **Natural Language Understanding**: Ask questions like "Find me wireless headphones under $200" or "What's the best laptop for a student?"
+- **Context Awareness**: Remembers your previous requests and preferences throughout the conversation
+- **Multi-Step Reasoning**: Handles complex queries that require multiple steps (e.g., "Find a laptop, then add it to my cart")
+- **Personalized Responses**: Adapts its tone and recommendations based on your needs
 
-### Optional: Additional Data Sources
-- Amazon Product Advertising API (requires Associates account + 3 sales)
-- eBay Finding API (free developer account)
-- Walmart Open API (requires seller account)
-- Best Buy API (free developer account)
-- Coupon APIs: Honey, RetailMeNot (partner programs)
+### Voice Assistant
+- **Speech-to-Text**: Speak your queries instead of typing
+- **Text-to-Speech**: Hear responses read aloud
+- **Customizable Voice**: Adjust speech rate, pitch, and volume to your preference
+- **Browser-Based**: Works entirely in your browser—no additional software needed
 
-## 🛠️ Installation
+### Modern User Interface
+- **Beautiful Design**: Glassmorphism effects, smooth animations, and modern visual aesthetics
+- **Interactive Backgrounds**: Dynamic particle effects and gradient animations that respond to your cursor
+- **Responsive Layout**: Works seamlessly on desktop, tablet, and mobile devices
+- **Accessibility**: Keyboard navigation, screen reader support, and reduced motion options
+- **Real-Time Updates**: Live product results as you chat
+
+### Production-Ready Infrastructure
+- **FastAPI Backend**: High-performance REST API with WebSocket support for streaming responses
+- **Redis Caching**: Intelligent caching reduces latency and API costs
+- **Database Persistence**: SQLAlchemy with support for SQLite and PostgreSQL
+- **Vector Database**: ChromaDB for semantic search and RAG capabilities
+- **Docker Deployment**: Containerized for easy deployment anywhere
+- **CI/CD Pipeline**: Automated testing, code quality checks, and security scanning
+- **Comprehensive Monitoring**: Health checks, metrics, error tracking, and performance analytics
+
+---
+
+## 🛠️ Technology Stack
+
+### Backend
+- **FastAPI** - Modern, fast web framework for building APIs
+- **Python 3.11+** - Latest Python features and performance improvements
+- **LangChain** - Framework for building LLM-powered applications
+- **LangGraph** - For complex agent workflows and multi-step reasoning
+- **OpenAI / Anthropic** - LLM providers (GPT-4, Claude 3.5)
+- **ChromaDB** - Vector database for semantic search
+- **SQLAlchemy** - Database ORM with migration support
+- **Redis** - High-performance caching layer
+- **WebSockets** - Real-time bidirectional communication
+
+### AI & Machine Learning
+- **RAG (Retrieval-Augmented Generation)** - Combines retrieval with generation for accurate responses
+- **Sentence Transformers** - For generating embeddings and semantic search
+- **Hybrid Search** - Combines vector similarity with keyword matching
+- **Model Context Protocol (MCP)** - Standardized tool integration
+
+### Frontend
+- **Vanilla JavaScript** - No framework dependencies, pure performance
+- **Modern CSS** - Custom properties, animations, glassmorphism effects
+- **Web Speech API** - Browser-native speech recognition and synthesis
+- **Responsive Design** - Mobile-first approach with flexible layouts
+
+### DevOps & Monitoring
+- **Docker** - Containerization for consistent deployments
+- **GitHub Actions** - CI/CD pipeline with automated testing
+- **Pytest** - Comprehensive test suite with coverage reporting
+- **Black** - Code formatting
+- **Flake8** - Linting
+- **MyPy** - Type checking
+- **pip-audit** - Security vulnerability scanning
+- **Langfuse** - LLM observability and tracing
+- **CloudWatch** - Metrics and monitoring (for AWS deployments)
+
+### External APIs & Services
+- **Serper API** - Google Shopping integration
+- **Tavily** - Web search and information retrieval
+- **Amazon Product Advertising API** - Amazon product data
+- **eBay Finding API** - eBay product listings
+- **Walmart Open API** - Walmart product catalog
+- **Best Buy API** - Best Buy product information
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Python 3.11 or higher
+- Redis (optional, for caching)
+- API keys:
+  - OpenAI API key OR Anthropic API key (for the LLM)
+  - Serper API key (for Google Shopping) - [Get it here](https://serper.dev)
+  - Tavily API key (optional, for web search) - [Get it here](https://tavily.com)
+
+### Installation
 
 1. **Clone the repository**
-```bash
-git clone <your-repo-url>
-cd agentic_ai
-```
+   ```bash
+   git clone https://github.com/Hruthik07/shopping-assistant.git
+   cd shopping-assistant
+   ```
 
-2. **Create virtual environment**
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
+2. **Create a virtual environment**
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
 
 3. **Install dependencies**
-```bash
-pip install -r requirements.txt
-```
+   ```bash
+   pip install -r requirements.txt
+   ```
 
 4. **Set up environment variables**
-```bash
-cp .env.example .env
-# Edit .env and add your API keys
-```
+   
+   Create a `.env` file in the root directory:
+   ```bash
+   # Required
+   OPENAI_API_KEY=your_openai_key
+   # OR
+   ANTHROPIC_API_KEY=your_anthropic_key
+   
+   # Required for product search
+   SERPER_API_KEY=your_serper_key
+   
+   # Optional
+   TAVILY_API_KEY=your_tavily_key
+   DATABASE_URL=sqlite:///./shopping_assistant.db
+   CACHE_ENABLED=true
+   REDIS_URL=redis://localhost:6379/0
+   ```
 
-Required environment variables:
-```bash
-OPENAI_API_KEY=your_openai_key
-SERPER_API_KEY=your_serper_key  # For Google Shopping
-TAVILY_API_KEY=your_tavily_key  # Optional
-```
+5. **Initialize the database**
+   ```bash
+   python scripts/init_db.py
+   ```
 
-5. **Initialize database**
-```bash
-python scripts/init_db.py
-```
+6. **Start the server**
+   ```bash
+   uvicorn src.api.main:app --host 0.0.0.0 --port 3565 --reload
+   ```
 
-This creates all tables including the new `price_history` table for deal tracking.
+7. **Open your browser**
+   
+   Navigate to `http://localhost:3565` to access the web interface.
 
-6. **Initialize vector database** (happens automatically on first run)
+### Docker Deployment
 
-## 🚀 Running the Application
-
-### Development Mode
-
-```bash
-uvicorn src.api.main:app --reload
-```
-
-The API will be available at `http://localhost:8000`
-
-### Docker
+For production deployment, use Docker Compose:
 
 ```bash
 docker-compose up --build
 ```
 
-### Access API Documentation
+The application will be available at `http://localhost:3565`.
 
-- Swagger UI: `http://localhost:3565/docs`
-- ReDoc: `http://localhost:3565/redoc`
+---
 
-### Health & Monitoring
+## 📖 Usage Examples
 
-#### Monitoring Stack
+### Web Interface
 
-The application provides comprehensive monitoring through multiple tools:
+Simply open the application in your browser and start chatting:
 
-1. **Langfuse** (LLM Observability)
-   - Traces all LLM calls
-   - Token usage tracking
-   - Cost analysis
-   - Response quality metrics
-   - Configure: `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`
+- "Find me running shoes under $100"
+- "What's the best wireless mouse for gaming?"
+- "Show me laptops with at least 16GB RAM"
+- "Compare prices for iPhone 15 across different stores"
 
-2. **CloudWatch** (AWS Bedrock Deployment)
-   - Application metrics (latency, cache, errors)
-   - Bedrock metrics (invocations, latency, errors)
-   - Evaluation metrics (IR, DeepEval)
-   - Cost tracking
-   - Unified dashboard
-   - Configure: `CLOUDWATCH_ENABLED=true`, `AWS_REGION`
+### API Usage
 
-3. **Confident AI** (Component Evaluation)
-   - DeepEval test results
-   - Quality score tracking
-   - Automated evaluation pipeline
-
-4. **IR Metrics** (Information Retrieval)
-   - Precision@K, Recall@K, NDCG@K
-   - Context Precision, MRR, MAP
-   - Available via evaluation scripts
-
-#### Health & Monitoring
-
-- Health Check: `http://localhost:3565/api/health`
-- Metrics: `http://localhost:3565/api/metrics`
-- Cache Stats: `http://localhost:3565/api/chat/cache/stats`
-
-## 📡 API Endpoints
-
-### Chat Endpoints
-
-- `POST /api/chat/` - Send a message to the shopping assistant
-- `GET /api/chat/history/{session_id}` - Get conversation history
-
-### Product Endpoints
-
-- `GET /api/products/search?q={query}` - Search for products
-- `GET /api/products/{product_id}` - Get product details
-
-### Cart Endpoints
-
-- `POST /api/cart/items` - Add item to cart
-- `GET /api/cart/?user_id={id}` - Get shopping cart
-- `DELETE /api/cart/items/{item_id}` - Remove item from cart
-
-### WebSocket
-
-- `WS /ws` - WebSocket endpoint for streaming chat
-
-## 💡 Usage Examples
-
-### Python Client
-
+#### Chat with the Assistant
 ```python
 import requests
 
-# Chat with the assistant
 response = requests.post(
-    "http://localhost:8000/api/chat/",
+    "http://localhost:3565/api/chat/",
     json={"message": "Find me wireless headphones under $200"}
 )
 
@@ -201,113 +224,260 @@ print(data["response"])
 print(f"Found {len(data.get('products', []))} products")
 ```
 
-### cURL
-
+#### Search for Products
 ```bash
-# Search for products
-curl "http://localhost:8000/api/products/search?q=laptop"
-
-# Chat with assistant
-curl -X POST "http://localhost:8000/api/chat/" \
-  -H "Content-Type: application/json" \
-  -d '{"message": "What are the best running shoes?"}'
+curl "http://localhost:3565/api/products/search?q=laptop&max_price=1000"
 ```
+
+#### Get Conversation History
+```bash
+curl "http://localhost:3565/api/chat/history/{session_id}"
+```
+
+### WebSocket Streaming
+
+For real-time streaming responses:
+
+```javascript
+const ws = new WebSocket('ws://localhost:3565/ws');
+ws.onmessage = (event) => {
+    const data = JSON.parse(event.data);
+    console.log(data.message);
+};
+```
+
+---
+
+## 🏗️ Architecture Overview
+
+```
+┌─────────────────┐
+│   User Query    │
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────────────────────────┐
+│     Agent Orchestrator               │
+│  (LangChain + LangGraph)             │
+└────────┬─────────────────────────────┘
+         │
+         ├──► RAG System (ChromaDB)
+         │    └──► Hybrid Search (Semantic + Keyword)
+         │
+         ├──► MCP Tools
+         │    ├──► Product Search
+         │    ├──► Price Comparison
+         │    ├──► Web Search
+         │    └──► Cart Operations
+         │
+         ├──► Memory System
+         │    ├──► Conversation History
+         │    └──► User Preferences
+         │
+         └──► Multi-Step Reasoning
+              └──► Tool Selection & Execution
+                   │
+                   ▼
+         ┌─────────────────────┐
+         │   Response +        │
+         │   Product Results   │
+         └─────────────────────┘
+```
+
+### Key Components
+
+1. **Shopping Agent** (`src/agent/shopping_agent.py`)
+   - Main orchestrator that processes queries
+   - Integrates LLM, tools, and memory
+   - Handles caching and error recovery
+
+2. **RAG System** (`src/rag/`)
+   - Vector store for semantic search
+   - Document retrieval from product data
+   - Hybrid search combining embeddings and keywords
+
+3. **MCP Tools** (`src/mcp/tools/`)
+   - Product search and aggregation
+   - Price comparison and deal detection
+   - Web search for additional information
+   - Cart management operations
+
+4. **Memory System** (`src/memory/`)
+   - Conversation history tracking
+   - User preference learning
+   - Session management
+
+5. **API Layer** (`src/api/`)
+   - REST endpoints for chat and products
+   - WebSocket support for streaming
+   - Rate limiting and CORS handling
+
+6. **Services** (`src/services/`)
+   - Product aggregation from multiple sources
+   - Price tracking and deal detection
+   - Coupon matching and transparency
+
+---
 
 ## 🧪 Testing
 
-Run tests with pytest:
+Run the test suite:
 
 ```bash
-pytest tests/
+pytest tests/ -v --cov=src --cov-report=html
 ```
 
-## 🐳 Docker Deployment
+The project includes:
+- Unit tests for core components
+- Integration tests for API endpoints
+- Test fixtures and mocks for external services
+- Coverage reporting
 
-Build and run with Docker Compose:
+---
 
-```bash
-docker-compose up --build
-```
+## 📊 Monitoring & Observability
 
-The application will be available at `http://localhost:8000`
+### Health Checks
+- `GET /api/health` - Application health status
+- `GET /api/metrics` - Performance metrics
+- `GET /api/chat/cache/stats` - Cache statistics
 
-## 📁 Project Structure
+### LLM Observability
+- **Langfuse**: Traces all LLM calls, tracks token usage, and analyzes costs
+- **CloudWatch**: Application metrics and Bedrock monitoring (for AWS deployments)
 
-```
-agentic_ai/
-├── src/
-│   ├── agent/          # Agent orchestrator and workflows
-│   ├── rag/            # RAG system (vector store, retriever)
-│   ├── mcp/            # MCP tools (product, search, image, cart)
-│   ├── memory/         # Conversation memory and preferences
-│   ├── database/       # Database models and schemas
-│   ├── api/            # FastAPI application and routes
-│   ├── analytics/      # Logging and tracking
-│   └── utils/          # Configuration and helpers
-├── data/               # Sample product data
-├── tests/              # Test files
-├── docker/             # Docker configuration
-└── requirements.txt   # Python dependencies
-```
+### Analytics
+- Request latency tracking
+- Cache hit/miss rates
+- Error rate monitoring
+- Deal detection analytics
+
+---
 
 ## 🔧 Configuration
 
 Key configuration options in `.env`:
 
-- `LLM_MODEL`: LLM model to use (default: gpt-4-turbo-preview)
-- `EMBEDDING_MODEL`: Embedding model (default: sentence-transformers)
-- `CHROMA_PERSIST_DIR`: Vector database directory
-- `RATE_LIMIT_PER_MINUTE`: API rate limit
+```bash
+# LLM Configuration
+LLM_PROVIDER=openai  # or anthropic
+LLM_MODEL=gpt-4-turbo-preview  # or claude-3-5-haiku-20241022
 
-## 🌟 Key Technologies
+# Embedding Model
+EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2
 
-- **LangChain/LangGraph**: Agent framework
-- **ChromaDB**: Vector database
-- **FastAPI**: Web framework
-- **OpenAI**: LLM and embeddings
-- **Serper API**: Google Shopping integration
-- **Tavily**: Web search
-- **SQLAlchemy**: Database ORM
-- **Docker**: Containerization
+# Database
+DATABASE_URL=sqlite:///./shopping_assistant.db
+# For PostgreSQL: postgresql://user:pass@localhost/dbname
 
-## 📊 Features in Detail
+# Caching
+CACHE_ENABLED=true
+REDIS_URL=redis://localhost:6379/0
 
-### RAG System
-- Multi-source retrieval (products, reviews, FAQs)
-- Hybrid search (semantic + keyword)
-- Real-time product fetching from APIs
+# Rate Limiting
+RATE_LIMIT_PER_MINUTE=60
 
-### MCP Tools
-1. **Product Tools**: Search, availability check, price check
-2. **Search Tools**: Web search, product review search
-3. **Image Tools**: Image analysis, similar product finder
-4. **Cart Tools**: Add to cart, get cart, remove items
+# Vector Database
+CHROMA_PERSIST_DIR=./chroma_db
 
-### Agent Capabilities
-- Intent detection
-- Tool selection
-- Multi-step reasoning
-- Context-aware responses
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## 📝 License
-
-This project is open source and available under the MIT License.
-
-## 🙏 Acknowledgments
-
-- Built with LangChain and FastAPI
-- Product data from Google Shopping (via Serper API)
-- Inspired by real-world e-commerce AI assistants
-
-## 📧 Contact
-
-For questions or issues, please open an issue on GitHub.
+# Monitoring
+LANGFUSE_ENABLED=false
+LANGFUSE_PUBLIC_KEY=your_key
+LANGFUSE_SECRET_KEY=your_secret
+```
 
 ---
 
-**Note**: Make sure to add your API keys in the `.env` file before running the application. The system will fall back to local sample data if APIs are not configured.
+## 📁 Project Structure
 
+```
+shopping-assistant/
+├── src/
+│   ├── agent/              # Agent orchestrator and workflows
+│   │   ├── shopping_agent.py
+│   │   ├── reasoning.py
+│   │   └── prompts/
+│   ├── api/                # FastAPI application
+│   │   ├── main.py
+│   │   ├── routes/         # API endpoints
+│   │   └── websocket.py
+│   ├── rag/                # RAG system
+│   │   ├── retriever.py
+│   │   ├── embeddings.py
+│   │   └── document_loader.py
+│   ├── mcp/                # MCP tools
+│   │   ├── mcp_client.py
+│   │   └── tools/          # Tool implementations
+│   ├── memory/             # Conversation memory
+│   │   ├── conversation_store.py
+│   │   └── user_preferences.py
+│   ├── services/           # Business logic
+│   │   ├── product_aggregator.py
+│   │   ├── deal_detector.py
+│   │   └── price_comparison.py
+│   ├── database/           # Database models
+│   │   ├── models.py
+│   │   └── schemas.py
+│   └── utils/              # Utilities and config
+├── frontend/               # Web interface
+│   ├── index.html
+│   ├── app.js
+│   └── styles.css
+├── tests/                  # Test suite
+├── docker/                 # Docker configuration
+├── .github/workflows/      # CI/CD pipelines
+└── requirements.txt        # Python dependencies
+```
+
+---
+
+## 🌟 What Makes This Special
+
+This isn't just another chatbot. It's a **production-ready AI system** that:
+
+1. **Actually finds products** - Not just text generation, but real product search across multiple retailers
+2. **Saves you money** - Automatically compares prices and detects deals
+3. **Remembers context** - Understands your preferences and previous conversations
+4. **Works in real-time** - Live product data, not stale information
+5. **Is transparent** - No hidden affiliate bias, just honest recommendations
+6. **Is accessible** - Voice support, keyboard navigation, screen reader friendly
+7. **Is beautiful** - Modern UI that's a joy to use
+8. **Is reliable** - Comprehensive testing, monitoring, and error handling
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Whether it's:
+- Bug fixes
+- New features
+- Documentation improvements
+- Performance optimizations
+- UI/UX enhancements
+
+Please feel free to open an issue or submit a pull request.
+
+---
+
+## 📝 License
+
+This project is open source and available under the [MIT License](LICENSE).
+
+---
+
+## 🙏 Acknowledgments
+
+- Built with [LangChain](https://www.langchain.com/) and [FastAPI](https://fastapi.tiangolo.com/)
+- Product data from Google Shopping (via [Serper API](https://serper.dev))
+- Inspired by real-world e-commerce AI assistants
+- Thanks to the open-source community for amazing tools and libraries
+
+---
+
+## 📧 Support
+
+For questions, issues, or feature requests, please open an issue on [GitHub](https://github.com/Hruthik07/shopping-assistant/issues).
+
+---
+
+**Built with ❤️ for smarter shopping**
