@@ -156,7 +156,7 @@ class ProductFetcher:
         """Get detailed product information from URL."""
         try:
             async with httpx.AsyncClient() as client:
-                response = await client.get(product_url, timeout=10.0, follow_redirects=True)
+                await client.get(product_url, timeout=10.0, follow_redirects=True)
                 # In a real implementation, you'd parse the HTML
                 # For now, return basic info
                 return {"url": product_url, "source": source, "available": True}

@@ -43,10 +43,10 @@ class TestLangfuseTraceCreation:
                                     ) as mock_llm:
                                         with patch.object(
                                             agent, "_store_conversation", new_callable=AsyncMock
-                                        ) as mock_store:
+                                        ):
                                             with patch.object(
                                                 agent, "_track_analytics"
-                                            ) as mock_analytics:
+                                            ):
 
                                                 mock_history.return_value = []
                                                 mock_prefs.return_value = {}
@@ -97,10 +97,10 @@ class TestLangfuseTraceCreation:
                                     ) as mock_llm:
                                         with patch.object(
                                             agent, "_store_conversation", new_callable=AsyncMock
-                                        ) as mock_store:
+                                        ):
                                             with patch.object(
                                                 agent, "_track_analytics"
-                                            ) as mock_analytics:
+                                            ):
 
                                                 mock_history.return_value = []
                                                 mock_prefs.return_value = {}

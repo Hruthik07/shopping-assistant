@@ -76,7 +76,7 @@ async def test_metrics_endpoint():
             response = await client.get(f"{BASE_URL}/api/metrics")
             if response.status_code == 200:
                 data = response.json()
-                print(f"[OK] Metrics endpoint accessible")
+                print("[OK] Metrics endpoint accessible")
                 print(f"    - Cache stats: {data.get('cache', {}).get('enabled', False)}")
                 return True
             else:
@@ -158,7 +158,7 @@ async def test_cache_stats():
             response = await client.get(f"{BASE_URL}/api/metrics/cache")
             if response.status_code == 200:
                 data = response.json()
-                print(f"[OK] Cache stats accessible")
+                print("[OK] Cache stats accessible")
                 print(f"    - Enabled: {data.get('enabled', False)}")
                 print(f"    - Hit rate: {data.get('hit_rate', 0):.1f}%")
                 return True
@@ -178,7 +178,7 @@ async def test_error_stats():
             response = await client.get(f"{BASE_URL}/api/errors/stats")
             if response.status_code == 200:
                 data = response.json()
-                print(f"[OK] Error stats accessible")
+                print("[OK] Error stats accessible")
                 print(f"    - Total errors: {data.get('total_errors', 0)}")
                 return True
             else:
@@ -222,7 +222,7 @@ async def run_all_tests():
                 await client.get(f"{BASE_URL}/api/health/liveness")
                 print("[OK] Server is ready!")
                 break
-        except:
+        except Exception:
             if i < max_retries - 1:
                 print(f"Waiting for server... ({i+1}/{max_retries})")
                 await asyncio.sleep(2)

@@ -366,7 +366,7 @@ class ShoppingAssistantGuardrails:
 
         return response.strip()
 
-    def sanitize_response_with_products(self, response: str, products: List[Dict[str, Any]]) -> str:
+    def sanitize_response_with_products(self, response: str, products: List[Dict[str, Any]]) -> str:  # noqa: C901
         """Sanitize response using product context to prevent merchant/store hallucinations.
 
         If the response claims a merchant (e.g., "Buy on Amazon") but none of the returned
@@ -428,7 +428,6 @@ class ShoppingAssistantGuardrails:
             # Replace markdown links whose URL domain isn't one of the product URL domains
             # Keep the visible text, but remove the link wrapper.
             def repl(m):
-                link_text = m.group(1) or "View Product"
                 url = (m.group(2) or "").strip()
                 d = _domain(url)
                 if not d or (allowed_domains and d not in allowed_domains):

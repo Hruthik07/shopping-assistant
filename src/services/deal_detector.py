@@ -94,7 +94,7 @@ class DealDetector:
                 return True
         return False
 
-    async def _analyze_product_deals(self, product: Dict[str, Any]) -> Dict[str, Any]:
+    async def _analyze_product_deals(self, product: Dict[str, Any]) -> Dict[str, Any]:  # noqa: C901
         """Analyze a single product for deals."""
         # Get product identifier
         product_id = (

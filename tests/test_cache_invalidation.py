@@ -24,7 +24,7 @@ class TestCacheInvalidation:
         tools_used = ["search_products"]
         request_id = "test-request-123"
 
-        with patch.object(conversation_store, "add_conversation") as mock_add:
+        with patch.object(conversation_store, "add_conversation"):
             with patch.object(cache_service, "delete", new_callable=AsyncMock) as mock_delete:
 
                 await agent._store_conversation(

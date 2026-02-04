@@ -164,7 +164,6 @@ class ProductAggregator:
         """
         # Group products by identifier
         product_groups: Dict[str, List[Dict[str, Any]]] = {}
-        products_without_id: List[Dict[str, Any]] = []
 
         for product in products:
             # Try to find identifier (UPC, GTIN, EAN, or SKU)

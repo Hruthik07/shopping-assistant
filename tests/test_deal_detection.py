@@ -26,7 +26,7 @@ async def test_deal_detection_no_history():
     # Should not crash, should add deal_info
     assert "deal_info" in result
     # No history means no deal detected initially
-    assert result["deal_info"]["is_deal"] == False or result["deal_info"].get("is_deal") is not None
+    assert result["deal_info"]["is_deal"] is False or result["deal_info"].get("is_deal") is not None
 
 
 @pytest.mark.asyncio
@@ -66,7 +66,7 @@ async def test_deal_detection_price_drop():
 
         assert "deal_info" in result
         # Should detect significant price drop
-        assert result["deal_info"]["is_deal"] == True
+        assert result["deal_info"]["is_deal"] is True
         assert result["deal_info"]["savings_percent"] > 0
 
     finally:

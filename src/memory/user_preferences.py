@@ -268,7 +268,7 @@ class UserPreferenceTracker:
                             price = float(price_match.group(1))
                         else:
                             continue
-                    except:
+                    except Exception:
                         continue
                 prices.append(price)
 

@@ -106,7 +106,7 @@ class TestConversationStoreAsync:
                 for i in range(10)
             ]
 
-            result = await store.get_context_for_llm(session_id, limit=3)
+            await store.get_context_for_llm(session_id, limit=3)
 
             # Verify limit was passed to get_conversation_history
             assert mock_history.called

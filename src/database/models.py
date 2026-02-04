@@ -117,9 +117,7 @@ class PriceHistory(Base):
     upc = Column(String, index=True, nullable=True)
     gtin = Column(String, index=True, nullable=True)
     ean = Column(String, index=True, nullable=True)
-    sku = Column(String, index=True, nullable=True)
-
-    # Metadata
+    sku = Column(String, index=True, nullable=True)    # Metadata
     product_metadata = Column(
         JSON, nullable=True
     )  # Additional source-specific data (renamed from 'metadata' - SQLAlchemy reserved)
