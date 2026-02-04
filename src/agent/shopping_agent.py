@@ -1328,12 +1328,30 @@ Remember: Help users find the perfect products within their budget while maintai
                 )
 
                 # Check for placeholder-like brackets more specifically
-                # Only flag if URL starts with bracket (definitely a placeholder like [product_url])
-                # Don't flag URLs ending with ] as they may have bracket-based query params
                 if not is_suspicious:
                     # Check if URL starts with bracket (definitely a placeholder)
                     if url.strip().startswith("["):
                         is_suspicious = True
+                    # Check if URL ends with ] - but only flag if it's likely a placeholder
+                    # URLs with query params like ?q=[value] are legitimate, so check if ? exists
+                    # If URL ends with ] and has no ? before it, it's likely from a placeholder
+                    elif url.strip().endswith("]"):
+                        # Check if there's a query string (?) before the ]
+                        # If no ? exists, it's likely a placeholder like [https://example.com]
+                        if "?" not in url:
+                            is_suspicious = True
+                        # If ? exists, check if ] is part of query param or trailing bracket
+                        # Query params with brackets are usually like ?q=[value] where ] is not at the end
+                        # If ] is at the very end after ?, it might still be a placeholder
+                        elif (
+                            url.rfind("?") < len(url) - 2
+                        ):  # ? exists and ] is not immediately after
+                            # This is likely a legitimate query param, don't flag
+                            pass
+                        else:
+                            # ? exists but ] is at the end - could be placeholder
+                            is_suspicious = True
+
                     # Check if brackets contain placeholder-like text (not query params)
                     # Look for brackets with text like "Link", "URL", "Product", etc.
                     bracket_placeholder_pattern = (
