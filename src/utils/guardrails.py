@@ -366,7 +366,9 @@ class ShoppingAssistantGuardrails:
 
         return response.strip()
 
-    def sanitize_response_with_products(self, response: str, products: List[Dict[str, Any]]) -> str:  # noqa: C901
+    def sanitize_response_with_products(
+        self, response: str, products: List[Dict[str, Any]]
+    ) -> str:  # noqa: C901
         """Sanitize response using product context to prevent merchant/store hallucinations.
 
         If the response claims a merchant (e.g., "Buy on Amazon") but none of the returned
