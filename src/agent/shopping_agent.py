@@ -1317,15 +1317,29 @@ Remember: Help users find the perfect products within their budget while maintai
             suspicious_patterns = [
                 r"example\.com",
                 r"placeholder",
-                r"\[.*\]",  # URLs containing brackets (likely placeholders)
                 r"product_url",
                 r"website_link",
             ]
             valid_urls = []
             for url in urls:
+                # Check for suspicious patterns (excluding bracket pattern for now)
                 is_suspicious = any(
                     re.search(pattern, url, re.IGNORECASE) for pattern in suspicious_patterns
                 )
+
+                # Check for placeholder-like brackets more specifically
+                # Only flag if brackets appear at start/end or contain placeholder-like text
+                if not is_suspicious:
+                    # Check if URL starts or ends with brackets (definitely a placeholder)
+                    if url.strip().startswith("[") or url.strip().endswith("]"):
+                        is_suspicious = True
+                    # Check if brackets contain placeholder-like text (not query params)
+                    # Look for brackets with text like "Link", "URL", "Product", etc.
+                    bracket_placeholder_pattern = (
+                        r"\[(?:Link|URL|Product|Website|Store|Purchase|Buy)[^\]]*\]"
+                    )
+                    if re.search(bracket_placeholder_pattern, url, re.IGNORECASE):
+                        is_suspicious = True
                 if is_suspicious:
                     logger.warning(
                         f"Suspicious URL pattern detected in response: {url[:100]}. "
@@ -1352,11 +1366,6 @@ Remember: Help users find the perfect products within their budget while maintai
                     "Response may contain placeholders or invalid URLs."
                 )
         else:
-            # Check if there are supposed to be URLs but none were found
-            if "[product_url]" in response_text or "[Product URL]" in response_text:
-                logger.warning(
-                    "Response contains [product_url] placeholder - this should be replaced with actual URL"
-                )
             # Check if response mentions products but has no URLs (potential issue)
             if "product" in response_text.lower() and (
                 "buy" in response_text.lower() or "purchase" in response_text.lower()
@@ -1365,6 +1374,14 @@ Remember: Help users find the perfect products within their budget while maintai
                     "Response mentions products and buying but no URLs found. "
                     "This may be acceptable if products are listed separately."
                 )
+
+        # Check for [product_url] placeholders unconditionally
+        # This must run regardless of whether URLs were found, as a response
+        # could contain both valid URLs and placeholders
+        if "[product_url]" in response_text or "[Product URL]" in response_text:
+            logger.warning(
+                "Response contains [product_url] placeholder - this should be replaced with actual URL"
+            )
 
         # ANTI-HALLUCINATION: Detect potential hallucinated information
         # Check for specific store addresses (common hallucination)
