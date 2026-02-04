@@ -1044,159 +1044,32 @@ Remember: Help users find the perfect products within their budget while maintai
             cached_response.get("tools_used", []),
         )
 
-    async def _process_with_llm(
-        self,
-        messages: List,
-        query: str,
-        intent: Dict[str, Any],
-        request_id: str,
-        langfuse_trace: Optional[Any] = None,
-        trace_id: Optional[str] = None,
-    ) -> tuple[str, List[Dict], List[str], Optional[Dict]]:
-        """Process query with LLM and extract response."""
-        llm_start_time = time.time()
-        first_token_time = None
-        response = None
-        # Model routing metadata (used for observability/cost tracking; may differ from the actual instantiated LLM)
-        selected_model = settings.llm_model
-        complexity = "default"
+    def _extract_trace_id(self, langfuse_trace: Optional[Any]) -> Optional[str]:
+        """Extract trace_id from langfuse_trace object."""
+        if not langfuse_trace:
+            return None
         try:
-            selected_model, complexity = model_router.select_model(query, intent)
+            if hasattr(langfuse_trace, "id"):
+                return langfuse_trace.id
+            elif isinstance(langfuse_trace, dict):
+                return langfuse_trace.get("id")
+            elif hasattr(langfuse_trace, "trace_id"):
+                return langfuse_trace.trace_id
         except Exception as e:
-            logger.debug(f"Model routing classification failed: {e}")
-        if not trace_id and langfuse_trace:
-            # Safely extract trace_id using the same pattern as in process_query
-            try:
-                if hasattr(langfuse_trace, "id"):
-                    trace_id = langfuse_trace.id
-                elif isinstance(langfuse_trace, dict):
-                    trace_id = langfuse_trace.get("id")
-                elif hasattr(langfuse_trace, "trace_id"):
-                    trace_id = langfuse_trace.trace_id
-            except Exception as e:
-                logger.debug(f"Failed to extract trace_id from langfuse_trace: {e}")
-                trace_id = None
+            logger.debug(f"Failed to extract trace_id from langfuse_trace: {e}")
+        return None
 
-        # Try streaming for TTFT
-        try:
-            async for chunk in self.llm.astream(messages):
-                if first_token_time is None:
-                    first_token_time = time.time()
-                    ttft = first_token_time - llm_start_time
-                    latency_tracker.track_ttft(request_id, ttft)
-                    logger.debug(f"First token received after {ttft:.3f}s")
-                    break
-        except Exception as e:
-            logger.debug(f"LLM streaming not available: {e}")
-
-        # Get full response with Langfuse generation tracking
-        llm_input = {
-            "messages": [
-                {
-                    "role": msg.__class__.__name__.replace("Message", "").lower(),
-                    "content": msg.content if hasattr(msg, "content") else str(msg),
-                }
-                for msg in messages[-10:]
-            ]  # Last 10 messages
-        }
-
-        with latency_tracker.track_component("llm_processing", request_id):
-            try:
-                response = await self._invoke_agent_with_retry(messages)
-            except TimeoutError as e:
-                logger.error(f"LLM processing timeout after 90 seconds: {e}")
-                raise TimeoutError(
-                    "LLM request timed out. The query may be too complex or the service is slow. Please try again."
-                )
-            except Exception as e:
-                logger.error(f"LLM processing error: {e}")
-                raise
-
-        # Estimate TTFT if streaming failed
-        if first_token_time is None:
-            llm_time = time.time() - llm_start_time
-            estimated_ttft = llm_time * 0.20
-            latency_tracker.track_ttft(request_id, estimated_ttft)
-            logger.debug(f"Estimated TTFT: {estimated_ttft:.3f}s")
-
-        # Extract response and tools
-        agent_response = self._extract_agent_response(response)
-        tools_used = (
-            self._extract_tools_used(response)
-            if response
-            else intent.get("tools_needed", []).copy()
-        )
-        products = self._extract_products_from_response(response) if response else []
-
-        # ANTI-HALLUCINATION: Validate that products in response match tool results
-        # This ensures the LLM isn't inventing products
-        if products:
-            products = self._validate_products_against_tools(products, tools_used)
-
-        # Create Langfuse generation with output and track costs
-        usage = None
-        if trace_id:
-            try:
-                # Try to extract token usage from response if available
-                if hasattr(response, "response_metadata") and response.response_metadata:
-                    usage = response.response_metadata.get("token_usage")
-                elif isinstance(response, dict) and "response_metadata" in response:
-                    usage = response["response_metadata"].get("token_usage")
-
-                # Build generation metadata
-                generation_metadata = {
-                    "complexity": complexity,
-                    "actual_model": settings.llm_model,  # Model actually used
-                    "routed_model": selected_model,  # Model that would be used with routing
-                }
-
-                # Add Bedrock-specific metadata if using Bedrock
-                if getattr(settings, "bedrock_enabled", False):
-                    generation_metadata.update(
-                        {
-                            "provider": "bedrock",
-                            "aws_region": getattr(settings, "aws_region", "us-east-1"),
-                            "model_identifier": settings.llm_model,  # Bedrock format: anthropic.claude-3-5-sonnet-20241022-v2:0
-                        }
-                    )
-
-                    # Add Bedrock invocation ID if available from response
-                    if hasattr(response, "response_metadata") and response.response_metadata:
-                        bedrock_metadata = response.response_metadata.get("bedrock_metadata", {})
-                        if bedrock_metadata:
-                            generation_metadata["bedrock_invocation_id"] = bedrock_metadata.get(
-                                "invocation_id"
-                            )
-                            generation_metadata["bedrock_region"] = bedrock_metadata.get("region")
-
-                # Use selected model in Langfuse tracking (for cost analysis)
-                langfuse_client.generation(
-                    trace_id=trace_id,
-                    name="llm_inference",
-                    model=selected_model,  # Track the selected model (even if not used yet)
-                    input=llm_input,
-                    output={
-                        "response": agent_response[:500],
-                        "products_count": len(products),
-                        "tools_used": tools_used,
-                    },
-                    usage=usage,
-                    metadata=generation_metadata,
-                )
-            except Exception as e:
-                logger.debug(f"Failed to create Langfuse generation: {e}")
-
-        # Track costs if token usage is available
-        # Try to extract token usage from multiple sources
+    def _extract_token_usage_from_response(
+        self, response: Optional[Any], usage: Optional[Dict]
+    ) -> Tuple[int, int]:
+        """Extract token usage from response or usage dict."""
         input_tokens = 0
         output_tokens = 0
 
         if usage:
-            # Langfuse format or direct usage dict
             input_tokens = usage.get("input_tokens", 0) or usage.get("prompt_tokens", 0) or 0
             output_tokens = usage.get("output_tokens", 0) or usage.get("completion_tokens", 0) or 0
 
-        # Also try to extract from response directly (for LangChain responses)
         if (input_tokens == 0 and output_tokens == 0) and response:
             try:
                 if hasattr(response, "response_metadata") and response.response_metadata:
@@ -1228,13 +1101,139 @@ Remember: Help users find the perfect products within their budget while maintai
             except Exception as e:
                 logger.debug(f"Failed to extract token usage from response: {e}")
 
-        # Record costs if we have token data
-        # Use selected_model for cost tracking (to measure potential savings)
+        return input_tokens, output_tokens
+
+    def _build_generation_metadata(
+        self, complexity: str, selected_model: str, response: Optional[Any]
+    ) -> Dict:
+        """Build metadata for Langfuse generation tracking."""
+        generation_metadata = {
+            "complexity": complexity,
+            "actual_model": settings.llm_model,
+            "routed_model": selected_model,
+        }
+
+        if getattr(settings, "bedrock_enabled", False):
+            generation_metadata.update(
+                {
+                    "provider": "bedrock",
+                    "aws_region": getattr(settings, "aws_region", "us-east-1"),
+                    "model_identifier": settings.llm_model,
+                }
+            )
+            if hasattr(response, "response_metadata") and response.response_metadata:
+                bedrock_metadata = response.response_metadata.get("bedrock_metadata", {})
+                if bedrock_metadata:
+                    generation_metadata["bedrock_invocation_id"] = bedrock_metadata.get(
+                        "invocation_id"
+                    )
+                    generation_metadata["bedrock_region"] = bedrock_metadata.get("region")
+
+        return generation_metadata
+
+    def _track_langfuse_generation(
+        self,
+        trace_id: str,
+        selected_model: str,
+        llm_input: Dict,
+        agent_response: str,
+        products: List[Dict],
+        tools_used: List[str],
+        usage: Optional[Dict],
+        generation_metadata: Dict,
+    ):
+        """Track LLM generation in Langfuse."""
+        try:
+            langfuse_client.generation(
+                trace_id=trace_id,
+                name="llm_inference",
+                model=selected_model,
+                input=llm_input,
+                output={
+                    "response": agent_response[:500],
+                    "products_count": len(products),
+                    "tools_used": tools_used,
+                },
+                usage=usage,
+                metadata=generation_metadata,
+            )
+        except Exception as e:
+            logger.debug(f"Failed to create Langfuse generation: {e}")
+
+    async def _try_streaming_for_ttft(
+        self, messages: List, llm_start_time: float, request_id: str
+    ) -> Optional[float]:
+        """Try to get first token time through streaming."""
+        try:
+            async for chunk in self.llm.astream(messages):
+                first_token_time = time.time()
+                ttft = first_token_time - llm_start_time
+                latency_tracker.track_ttft(request_id, ttft)
+                logger.debug(f"First token received after {ttft:.3f}s")
+                return first_token_time
+        except Exception as e:
+            logger.debug(f"LLM streaming not available: {e}")
+        return None
+
+    def _prepare_llm_input(self, messages: List) -> Dict:
+        """Prepare LLM input for Langfuse tracking."""
+        return {
+            "messages": [
+                {
+                    "role": msg.__class__.__name__.replace("Message", "").lower(),
+                    "content": msg.content if hasattr(msg, "content") else str(msg),
+                }
+                for msg in messages[-10:]
+            ]
+        }
+
+    async def _invoke_llm_with_tracking(self, messages: List, request_id: str):
+        """Invoke LLM with latency tracking."""
+        with latency_tracker.track_component("llm_processing", request_id):
+            try:
+                return await self._invoke_agent_with_retry(messages)
+            except TimeoutError as e:
+                logger.error(f"LLM processing timeout after 90 seconds: {e}")
+                raise TimeoutError(
+                    "LLM request timed out. The query may be too complex or the service is slow. Please try again."
+                )
+            except Exception as e:
+                logger.error(f"LLM processing error: {e}")
+                raise
+
+    def _estimate_ttft_if_needed(
+        self, first_token_time: Optional[float], llm_start_time: float, request_id: str
+    ):
+        """Estimate TTFT if streaming failed."""
+        if first_token_time is None:
+            llm_time = time.time() - llm_start_time
+            estimated_ttft = llm_time * 0.20
+            latency_tracker.track_ttft(request_id, estimated_ttft)
+            logger.debug(f"Estimated TTFT: {estimated_ttft:.3f}s")
+
+    def _extract_usage_from_response(self, response: Optional[Any]) -> Optional[Dict]:
+        """Extract token usage from response metadata."""
+        if not response:
+            return None
+        if hasattr(response, "response_metadata") and response.response_metadata:
+            return response.response_metadata.get("token_usage")
+        elif isinstance(response, dict) and "response_metadata" in response:
+            return response["response_metadata"].get("token_usage")
+        return None
+
+    def _track_costs_if_available(
+        self,
+        input_tokens: int,
+        output_tokens: int,
+        selected_model: str,
+        request_id: str,
+        query: str,
+    ):
+        """Track costs if token data is available."""
         if input_tokens > 0 or output_tokens > 0:
             try:
-                # Track with selected model to measure potential cost savings
                 cost_tracker.record_usage(
-                    model=selected_model,  # Use routed model for cost tracking
+                    model=selected_model,
                     input_tokens=input_tokens,
                     output_tokens=output_tokens,
                     request_id=request_id,
@@ -1242,6 +1241,65 @@ Remember: Help users find the perfect products within their budget while maintai
                 )
             except Exception as e:
                 logger.debug(f"Failed to track costs: {e}")
+
+    async def _process_with_llm(
+        self,
+        messages: List,
+        query: str,
+        intent: Dict[str, Any],
+        request_id: str,
+        langfuse_trace: Optional[Any] = None,
+        trace_id: Optional[str] = None,
+    ) -> tuple[str, List[Dict], List[str], Optional[Dict]]:
+        """Process query with LLM and extract response."""
+        llm_start_time = time.time()
+        selected_model = settings.llm_model
+        complexity = "default"
+
+        try:
+            selected_model, complexity = model_router.select_model(query, intent)
+        except Exception as e:
+            logger.debug(f"Model routing classification failed: {e}")
+
+        if not trace_id:
+            trace_id = self._extract_trace_id(langfuse_trace)
+
+        first_token_time = await self._try_streaming_for_ttft(messages, llm_start_time, request_id)
+        llm_input = self._prepare_llm_input(messages)
+        response = await self._invoke_llm_with_tracking(messages, request_id)
+        self._estimate_ttft_if_needed(first_token_time, llm_start_time, request_id)
+
+        agent_response = self._extract_agent_response(response)
+        tools_used = (
+            self._extract_tools_used(response)
+            if response
+            else intent.get("tools_needed", []).copy()
+        )
+        products = self._extract_products_from_response(response) if response else []
+
+        if products:
+            products = self._validate_products_against_tools(products, tools_used)
+
+        usage = self._extract_usage_from_response(response)
+        if trace_id:
+            generation_metadata = self._build_generation_metadata(
+                complexity, selected_model, response
+            )
+            self._track_langfuse_generation(
+                trace_id,
+                selected_model,
+                llm_input,
+                agent_response,
+                products,
+                tools_used,
+                usage,
+                generation_metadata,
+            )
+
+        input_tokens, output_tokens = self._extract_token_usage_from_response(response, usage)
+        self._track_costs_if_available(
+            input_tokens, output_tokens, selected_model, request_id, query
+        )
 
         return agent_response, products, tools_used, response
 
@@ -1274,25 +1332,17 @@ Remember: Help users find the perfect products within their budget while maintai
         content = self._validate_and_clean_response(content)
         return content
 
-    def _validate_and_clean_response(self, response_text: str) -> str:
-        """Validate response and clean placeholder text.
-
-        Detects and warns about placeholder text like [Website Link], [CVS Website Link], etc.
-        """
+    def _replace_placeholder_text(self, response_text: str) -> str:
+        """Replace placeholder text like [Website Link] with a notice."""
         import re
 
-        if not isinstance(response_text, str):
-            return response_text
-
-        # Pattern to detect placeholder text (not actual URLs)
         placeholder_patterns = [
             r"\[(?:CVS|Walmart|Walgreens|Target|Amazon|Store|Website|Product|Online)\s+(?:Website|Store|Link|Purchase|Buy)\s*Link?\]",
             r"\[(?:Website|Store|Product|Online|Purchase|Buy)\s*Link?\]",
             r"\[Link\s*to\s*[^\]]+\]",
-            r"\[[^\]]*Link[^\]]*\]",  # Any text containing "Link" in brackets
+            r"\[[^\]]*Link[^\]]*\]",
         ]
 
-        # Check for placeholder patterns
         for pattern in placeholder_patterns:
             matches = re.findall(pattern, response_text, re.IGNORECASE)
             if matches:
@@ -1300,93 +1350,51 @@ Remember: Help users find the perfect products within their budget while maintai
                     f"Detected placeholder text in response: {matches}. "
                     "This should be replaced with actual URLs from web_search results."
                 )
-                # Replace with a note that URL wasn't found
                 for match in matches:
                     response_text = response_text.replace(
                         match,
                         "Product link not available - please use web_search to find the actual URL",
                     )
+        return response_text
 
-        # Validate URLs in response - ensure they're actual URLs, not placeholders
+    def _is_url_suspicious(self, url: str) -> bool:
+        """Check if a URL is suspicious or placeholder-like."""
+        import re
+
+        suspicious_patterns = [
+            r"example\.com",
+            r"placeholder",
+            r"product_url",
+            r"website_link",
+        ]
+
+        if any(re.search(pattern, url, re.IGNORECASE) for pattern in suspicious_patterns):
+            return True
+
+        if url.strip().startswith("["):
+            return True
+
+        if url.strip().endswith("]"):
+            if "?" not in url:
+                return True
+            elif url.rfind("?") >= len(url) - 2:
+                return True
+
+        bracket_placeholder_pattern = r"\[(?:Link|URL|Product|Website|Store|Purchase|Buy)[^\]]*\]"
+        if re.search(bracket_placeholder_pattern, url, re.IGNORECASE):
+            return True
+
+        return False
+
+    def _validate_urls_in_response(self, response_text: str) -> None:
+        """Validate URLs in response and log warnings for suspicious ones."""
+        import re
+        from urllib.parse import urlparse
+
         url_pattern = r"https?://[^\s\)]+"
         urls = re.findall(url_pattern, response_text)
 
-        # Validate found URLs
-        if urls:
-            # Check for suspicious URL patterns that might be placeholders or hallucinations
-            suspicious_patterns = [
-                r"example\.com",
-                r"placeholder",
-                r"product_url",
-                r"website_link",
-            ]
-            valid_urls = []
-            for url in urls:
-                # Check for suspicious patterns
-                is_suspicious = any(
-                    re.search(pattern, url, re.IGNORECASE) for pattern in suspicious_patterns
-                )
-
-                # Check for placeholder-like brackets more specifically
-                if not is_suspicious:
-                    # Check if URL starts with bracket (definitely a placeholder)
-                    if url.strip().startswith("["):
-                        is_suspicious = True
-                    # Check if URL ends with ] - but only flag if it's likely a placeholder
-                    # URLs with query params like ?q=[value] are legitimate, so check if ? exists
-                    # If URL ends with ] and has no ? before it, it's likely from a placeholder
-                    elif url.strip().endswith("]"):
-                        # Check if there's a query string (?) before the ]
-                        # If no ? exists, it's likely a placeholder like [https://example.com]
-                        if "?" not in url:
-                            is_suspicious = True
-                        # If ? exists, check if ] is part of query param or trailing bracket
-                        # Query params with brackets are usually like ?q=[value] where ] is not at the end
-                        # If ] is at the very end after ?, it might still be a placeholder
-                        elif (
-                            url.rfind("?") < len(url) - 2
-                        ):  # ? exists and ] is not immediately after
-                            # This is likely a legitimate query param, don't flag
-                            pass
-                        else:
-                            # ? exists but ] is at the end - could be placeholder
-                            is_suspicious = True
-
-                    # Check if brackets contain placeholder-like text (not query params)
-                    # Look for brackets with text like "Link", "URL", "Product", etc.
-                    bracket_placeholder_pattern = (
-                        r"\[(?:Link|URL|Product|Website|Store|Purchase|Buy)[^\]]*\]"
-                    )
-                    if re.search(bracket_placeholder_pattern, url, re.IGNORECASE):
-                        is_suspicious = True
-
-                if is_suspicious:
-                    logger.warning(
-                        f"Suspicious URL pattern detected in response: {url[:100]}. "
-                        "This may be a placeholder or hallucinated URL."
-                    )
-                else:
-                    # Basic URL validation: check it has a valid domain
-                    try:
-                        from urllib.parse import urlparse
-
-                        parsed = urlparse(url)
-                        if parsed.netloc and "." in parsed.netloc:
-                            valid_urls.append(url)
-                        else:
-                            logger.warning(f"Invalid URL format detected: {url[:100]}")
-                    except Exception as e:
-                        logger.debug(f"Error parsing URL {url[:100]}: {e}")
-
-            if valid_urls:
-                logger.debug(f"Found {len(valid_urls)} valid URLs in response")
-            elif urls:
-                logger.warning(
-                    f"Found {len(urls)} URL-like patterns but none passed validation. "
-                    "Response may contain placeholders or invalid URLs."
-                )
-        else:
-            # Check if response mentions products but has no URLs (potential issue)
+        if not urls:
             if "product" in response_text.lower() and (
                 "buy" in response_text.lower() or "purchase" in response_text.lower()
             ):
@@ -1394,13 +1402,65 @@ Remember: Help users find the perfect products within their budget while maintai
                     "Response mentions products and buying but no URLs found. "
                     "This may be acceptable if products are listed separately."
                 )
+            return
 
-        # Check for [product_url] placeholders unconditionally and replace them
-        # This must run regardless of whether URLs were found, as a response
-        # could contain both valid URLs and placeholders
+        valid_urls = []
+        for url in urls:
+            if self._is_url_suspicious(url):
+                logger.warning(
+                    f"Suspicious URL pattern detected in response: {url[:100]}. "
+                    "This may be a placeholder or hallucinated URL."
+                )
+            else:
+                try:
+                    parsed = urlparse(url)
+                    if parsed.netloc and "." in parsed.netloc:
+                        valid_urls.append(url)
+                    else:
+                        logger.warning(f"Invalid URL format detected: {url[:100]}")
+                except Exception as e:
+                    logger.debug(f"Error parsing URL {url[:100]}: {e}")
+
+        if valid_urls:
+            logger.debug(f"Found {len(valid_urls)} valid URLs in response")
+        elif urls:
+            logger.warning(
+                f"Found {len(urls)} URL-like patterns but none passed validation. "
+                "Response may contain placeholders or invalid URLs."
+            )
+
+    def _check_hallucination_patterns(self, response_text: str) -> None:
+        """Check for potential hallucinated information in response."""
+        import re
+
+        store_address_pattern = r"\b(at|located at|found at)\s+\d+\s+[A-Z][a-z]+\s+(Street|St|Road|Rd|Avenue|Ave|Drive|Dr|Lane|Ln|Boulevard|Blvd|Way|Circle|Ct)"
+        potential_addresses = re.findall(store_address_pattern, response_text, re.IGNORECASE)
+        if potential_addresses:
+            logger.warning(
+                f"Potential hallucinated store addresses detected: {potential_addresses}. "
+                "Store addresses should only come from web_search results."
+            )
+
+        price_mentions = re.findall(r"\$\d+\.\d{2}", response_text)
+        if len(price_mentions) > 10:
+            logger.warning(
+                f"Many price mentions detected ({len(price_mentions)}). "
+                "Ensure all prices come from tool results."
+            )
+
+    def _validate_and_clean_response(self, response_text: str) -> str:
+        """Validate response and clean placeholder text.
+
+        Detects and warns about placeholder text like [Website Link], [CVS Website Link], etc.
+        """
+        if not isinstance(response_text, str):
+            return response_text
+
+        response_text = self._replace_placeholder_text(response_text)
+        self._validate_urls_in_response(response_text)
+
         if "[product_url]" in response_text or "[Product URL]" in response_text:
             logger.warning("Response contains [product_url] placeholder - replacing with notice")
-            # Replace placeholders with a notice (consistent with other placeholder handling)
             response_text = response_text.replace(
                 "[product_url]",
                 "Product link not available - please use web_search to find the actual URL",
@@ -1410,26 +1470,148 @@ Remember: Help users find the perfect products within their budget while maintai
                 "Product link not available - please use web_search to find the actual URL",
             )
 
-        # ANTI-HALLUCINATION: Detect potential hallucinated information
-        # Check for specific store addresses (common hallucination)
-        store_address_pattern = r"\b(at|located at|found at)\s+\d+\s+[A-Z][a-z]+\s+(Street|St|Road|Rd|Avenue|Ave|Drive|Dr|Lane|Ln|Boulevard|Blvd|Way|Circle|Ct)"
-        potential_addresses = re.findall(store_address_pattern, response_text, re.IGNORECASE)
-        if potential_addresses:
-            logger.warning(
-                f"Potential hallucinated store addresses detected: {potential_addresses}. "
-                "Store addresses should only come from web_search results."
-            )
-
-        # Check for specific prices mentioned without context
-        # This is less strict - prices should come from tool results
-        price_mentions = re.findall(r"\$\d+\.\d{2}", response_text)
-        if len(price_mentions) > 10:  # Too many price mentions might indicate hallucination
-            logger.warning(
-                f"Many price mentions detected ({len(price_mentions)}). "
-                "Ensure all prices come from tool results."
-            )
+        self._check_hallucination_patterns(response_text)
 
         return response_text
+
+    def _clean_display_text(self, s: str) -> str:
+        """Clean display text by collapsing whitespace and removing control chars."""
+        import re as _re
+
+        if not isinstance(s, str):
+            s = str(s)
+        s = _re.sub(r"\s+", " ", s).strip()
+        s = "".join(ch for ch in s if (ord(ch) >= 32 and ord(ch) != 127))
+        return s
+
+    def _truncate_text(self, s: str, n: int) -> str:
+        """Truncate text to n characters."""
+        s = self._clean_display_text(s or "")
+        if len(s) <= n:
+            return s
+        return s[: max(0, n - 3)].rstrip() + "..."
+
+    def _format_product_price(self, price: Any) -> str:
+        """Format product price for display."""
+        if isinstance(price, (int, float)):
+            return f"${float(price):.2f}"
+        elif isinstance(price, str) and price.strip():
+            return self._clean_display_text(price.strip())
+        return ""
+
+    def _format_product_link(self, product: Dict[str, Any]) -> str:
+        """Format product link for display."""
+        url = self._clean_display_text(
+            product.get("product_url") or product.get("link") or product.get("url") or ""
+        )
+        if isinstance(url, str) and url.startswith(("http://", "https://")):
+            return f"[View Product]({url})"
+        return "View Product"
+
+    def _build_product_what_parts(self, product: Dict[str, Any]) -> List[str]:
+        """Build 'What it is' parts for a product."""
+        what_parts: List[str] = []
+        desc = product.get("description") or ""
+        category = product.get("category") or ""
+
+        if isinstance(desc, str) and desc.strip():
+            what_parts.append(self._truncate_text(desc, 140))
+        elif (
+            isinstance(category, str) and category.strip() and category.strip().lower() != "general"
+        ):
+            what_parts.append(f"Category: {self._truncate_text(category, 60)}")
+
+        rating = product.get("rating")
+        reviews = product.get("reviews")
+        try:
+            rating_val = float(rating) if rating is not None else 0.0
+        except Exception:
+            rating_val = 0.0
+        try:
+            reviews_val = int(reviews) if reviews is not None else 0
+        except Exception:
+            reviews_val = 0
+
+        if rating_val and rating_val > 0:
+            if reviews_val and reviews_val > 0:
+                what_parts.append(f"Rating: {rating_val:.1f}/5 ({reviews_val} reviews)")
+            else:
+                what_parts.append(f"Rating: {rating_val:.1f}/5")
+
+        return what_parts
+
+    def _build_product_why_parts(
+        self, product: Dict[str, Any], max_price: Optional[float]
+    ) -> List[str]:
+        """Build 'Why it matches' parts for a product."""
+        reasons: List[str] = []
+        score = product.get("_semantic_score")
+        try:
+            score_val = float(score) if score is not None else None
+        except Exception:
+            score_val = None
+
+        if score_val is not None:
+            reasons.append(f"high semantic match (score {score_val:.2f})")
+
+        if max_price is not None:
+            try:
+                price_val = self._parse_product_price(product.get("price"))
+            except Exception:
+                price_val = 0.0
+            if price_val and price_val <= float(max_price):
+                reasons.append(f"within budget (≤ ${float(max_price):.0f})")
+
+        return reasons
+
+    def _format_single_product(
+        self, product: Dict[str, Any], index: int, max_price: Optional[float]
+    ) -> List[str]:
+        """Format a single product for display."""
+        lines = []
+        name = self._clean_display_text(product.get("name") or product.get("title") or "")
+        if not name:
+            return lines
+
+        price_str = self._format_product_price(product.get("price"))
+        link = self._format_product_link(product)
+
+        bullet = f"{index}. **{name}**"
+        if price_str:
+            bullet += f" - {price_str}"
+        lines.append(bullet)
+
+        what_parts = self._build_product_what_parts(product)
+        if what_parts:
+            lines.append(f"   - What it is: {' | '.join(what_parts)}")
+
+        reasons = self._build_product_why_parts(product, max_price)
+        if reasons:
+            lines.append(f"   - Why it matches: {', '.join(reasons[:3])}.")
+
+        lines.append(f"   - {link}")
+        lines.append("")
+
+        return lines
+
+    def _build_response_header(self, max_price: Optional[float]) -> List[str]:
+        """Build the header for grounded response."""
+        header = "Here are a few solid options I found"
+        if max_price is not None:
+            header += f" under ${max_price:.0f}"
+        header += ":"
+
+        lines = [header]
+        lines.append(
+            "Why these match: ranked by **semantic similarity (embeddings)** to your request."
+        )
+        if max_price is not None:
+            lines.append(
+                f"Budget filter applied: ≤ **${max_price:.0f}** (when price was available)."
+            )
+        lines.append("")
+
+        return lines
 
     def _ground_response_to_products(
         self,
@@ -1460,118 +1642,17 @@ Remember: Help users find the perfect products within their budget while maintai
                 price_range = None
 
             max_price = price_range[1] if price_range else None
-
-            header = "Here are a few solid options I found"
-            if max_price is not None:
-                header += f" under ${max_price:.0f}"
-            header += ":"
-
-            lines = [header]
-            # Semantic-only explanation (no keyword/term matching).
-            lines.append(
-                "Why these match: ranked by **semantic similarity (embeddings)** to your request."
-            )
-            if max_price is not None:
-                lines.append(
-                    f"Budget filter applied: ≤ **${max_price:.0f}** (when price was available)."
-                )
-            lines.append("")
+            lines = self._build_response_header(max_price)
 
             shown = 0
-            import re as _re
-
-            def _clean_display_text(s: str) -> str:
-                if not isinstance(s, str):
-                    s = str(s)
-                # Collapse whitespace and drop control chars
-                s = _re.sub(r"\s+", " ", s).strip()
-                s = "".join(ch for ch in s if (ord(ch) >= 32 and ord(ch) != 127))
-                return s
-
-            def _truncate(s: str, n: int) -> str:
-                s = _clean_display_text(s or "")
-                if len(s) <= n:
-                    return s
-                return s[: max(0, n - 3)].rstrip() + "..."
-
             for idx, p in enumerate(products):
                 if shown >= max_items:
                     break
-                name = _clean_display_text(p.get("name") or p.get("title") or "")
-                if not name:
-                    continue
-                price = p.get("price")
-                price_str = ""
-                if isinstance(price, (int, float)):
-                    price_str = f"${float(price):.2f}"
-                elif isinstance(price, str) and price.strip():
-                    price_str = _clean_display_text(price.strip())
 
-                url = _clean_display_text(
-                    p.get("product_url") or p.get("link") or p.get("url") or ""
-                )
-                # Always use neutral link text to avoid parser issues
-                link = "View Product"
-                if isinstance(url, str) and url.startswith(("http://", "https://")):
-                    link = f"[View Product]({url})"
-
-                bullet = f"{shown + 1}. **{name}**"
-                if price_str:
-                    bullet += f" - {price_str}"
-                lines.append(bullet)
-
-                # What it is (only from tool data)
-                desc = p.get("description") or ""
-                category = p.get("category") or ""
-                what_parts: List[str] = []
-                if isinstance(desc, str) and desc.strip():
-                    what_parts.append(_truncate(desc, 140))
-                elif (
-                    isinstance(category, str)
-                    and category.strip()
-                    and category.strip().lower() != "general"
-                ):
-                    what_parts.append(f"Category: {_truncate(category, 60)}")
-                rating = p.get("rating")
-                reviews = p.get("reviews")
-                try:
-                    rating_val = float(rating) if rating is not None else 0.0
-                except Exception:
-                    rating_val = 0.0
-                try:
-                    reviews_val = int(reviews) if reviews is not None else 0
-                except Exception:
-                    reviews_val = 0
-                if rating_val and rating_val > 0:
-                    if reviews_val and reviews_val > 0:
-                        what_parts.append(f"Rating: {rating_val:.1f}/5 ({reviews_val} reviews)")
-                    else:
-                        what_parts.append(f"Rating: {rating_val:.1f}/5")
-                if what_parts:
-                    lines.append(f"   - What it is: {' | '.join(what_parts)}")
-
-                # Why it matches (semantic score + explicit numeric constraints only)
-                reasons: List[str] = []
-                score = p.get("_semantic_score")
-                try:
-                    score_val = float(score) if score is not None else None
-                except Exception:
-                    score_val = None
-                if score_val is not None:
-                    reasons.append(f"high semantic match (score {score_val:.2f})")
-                if max_price is not None:
-                    try:
-                        price_val = self._parse_product_price(p.get("price"))
-                    except Exception:
-                        price_val = 0.0
-                    if price_val and price_val <= float(max_price):
-                        reasons.append(f"within budget (≤ ${float(max_price):.0f})")
-                if reasons:
-                    lines.append(f"   - Why it matches: {', '.join(reasons[:3])}.")
-
-                lines.append(f"   - {link}")
-                lines.append("")
-                shown += 1
+                product_lines = self._format_single_product(p, shown + 1, max_price)
+                if product_lines:
+                    lines.extend(product_lines)
+                    shown += 1
 
             if shown == 0:
                 return agent_response
@@ -1581,7 +1662,6 @@ Remember: Help users find the perfect products within their budget while maintai
             )
             return "\n".join(lines).strip()
         except Exception as e:
-            # Use warning so we can see failures in normal logs (grounding impacts UX correctness).
             logger.warning(f"Failed to ground response to products: {e}")
             return agent_response
 
