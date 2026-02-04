@@ -1,4 +1,5 @@
 """Pytest configuration and fixtures for tests."""
+
 import os
 import sys
 from pathlib import Path
@@ -39,8 +40,10 @@ def setup_test_environment():
 @pytest.fixture
 def mock_llm():
     """Mock LLM for tests that don't need real API calls."""
-    with patch("src.agent.shopping_agent.ChatAnthropic") as mock_anthropic, \
-         patch("src.agent.shopping_agent.ChatOpenAI") as mock_openai:
+    with (
+        patch("src.agent.shopping_agent.ChatAnthropic") as mock_anthropic,
+        patch("src.agent.shopping_agent.ChatOpenAI") as mock_openai,
+    ):
         mock_llm_instance = MagicMock()
         mock_anthropic.return_value = mock_llm_instance
         mock_openai.return_value = mock_llm_instance
@@ -54,7 +57,7 @@ def mock_cache():
         # Set basic attributes
         mock.enabled = False
         mock.redis_client = None
-        
+
         # Configure all async methods to use AsyncMock
         mock.connect = AsyncMock(return_value=None)
         mock.disconnect = AsyncMock(return_value=None)
@@ -72,8 +75,8 @@ def mock_cache():
         mock.get_conversation_history = AsyncMock(return_value=None)
         mock.set_conversation_history = AsyncMock(return_value=False)
         mock.get_stats = AsyncMock(return_value={"hits": 0, "misses": 0, "sets": 0, "errors": 0})
-        
+
         # Mock get_cache_stats (synchronous method)
         mock.get_cache_stats = MagicMock(return_value={"hit_rate": 0.0, "hits": 0, "misses": 0})
-        
+
         yield mock
