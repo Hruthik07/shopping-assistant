@@ -31,9 +31,9 @@ alembic==1.13.1
 
 # MCP & Tools
 httpx==0.26.0
-aiohttp>=3.9.1  # Use newer version with pre-built wheels for Python 3.13
-pillow>=10.0.0  # Use latest version with pre-built wheels
-tavily-python>=0.3.0  # Allow newer version for tiktoken compatibility
+aiohttp>=3.9.1,<4.0.0  # Use newer version with pre-built wheels for Python 3.13
+pillow>=10.0.0,<11.0.0  # Use latest version with pre-built wheels
+tavily-python>=0.3.0,<1.0.0  # Allow newer version for tiktoken compatibility
 beautifulsoup4==4.12.2  # For web scraping if needed
 
 # API & WebSocket
@@ -51,8 +51,8 @@ redis>=5.0.0,<6.0.0
 hiredis>=2.2.0,<3.0.0  # C extension for faster Redis parsing
 
 # Retry & Resilience
-tenacity>=8.2.0  # Retry library with exponential backoff
-circuitbreaker>=2.0.0  # Circuit breaker pattern implementation
+tenacity>=8.2.0,<9.0.0  # Retry library with exponential backoff
+circuitbreaker>=2.0.0,<3.0.0  # Circuit breaker pattern implementation
 
 # Testing
 pytest==7.4.4
@@ -65,10 +65,10 @@ langfuse>=2.0.0,<3.0.0
 # pytest-deepeval>=0.1.0  # Removed: not available for Python 3.11+, use deepeval directly
 
 # AWS Integration (for Bedrock deployment)
-boto3>=1.34.0  # AWS SDK for CloudWatch, Cost Explorer, Bedrock
-botocore>=1.34.0  # Core AWS SDK (usually comes with boto3)
+boto3>=1.34.0,<2.0.0  # AWS SDK for CloudWatch, Cost Explorer, Bedrock
+botocore>=1.34.0,<2.0.0  # Core AWS SDK (usually comes with boto3)
 
 # Development
-black>=24.3.0  # Fixed PYSEC-2024-48
+black>=24.3.0,<25.0.0  # Fixed PYSEC-2024-48
 flake8==7.0.0
 mypy==1.8.0
