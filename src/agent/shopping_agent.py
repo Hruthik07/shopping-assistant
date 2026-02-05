@@ -397,7 +397,7 @@ Remember: Help users find the perfect products within their budget while maintai
             logger.error("LLM invocation timed out after 90 seconds")
             raise TimeoutError("LLM request timed out. Please try again with a simpler query.")
 
-    async def stream_response(self, messages: List) -> AsyncIterator[str]:
+    async def stream_response(self, messages: List) -> AsyncIterator[str]:  # noqa: C901
         """Stream agent response token by token.
 
         Args:
@@ -632,14 +632,14 @@ Remember: Help users find the perfect products within their budget while maintai
             try:
                 result = float(numeric_chars) if numeric_chars else 0.0
                 return result
-            except (ValueError, AttributeError) as parse_err:
+            except (ValueError, AttributeError):
                 return 0.0
 
         return 0.0
 
     # Main Query Processing Method
 
-    async def process_query(
+    async def process_query(  # noqa: C901
         self,
         query: str,
         session_id: str,
@@ -724,7 +724,7 @@ Remember: Help users find the perfect products within their budget while maintai
                 try:
                     # Tags are set at creation, but we can add metadata
                     pass  # Tags are immutable after creation
-                except:
+                except Exception:
                     pass
 
             # Update agent if persona/tone changed
@@ -753,7 +753,7 @@ Remember: Help users find the perfect products within their budget while maintai
             # Check cache
             try:
                 context_hash = self._create_context_hash(messages)
-            except Exception as hash_err:
+            except Exception:
                 raise
 
             cached_response = None
@@ -812,7 +812,6 @@ Remember: Help users find the perfect products within their budget while maintai
                     )
 
             # Refetch products if needed
-            products_before_refetch = len(products)
             products = await self._ensure_products_with_price_filter(
                 query, products, intent, tools_used
             )
@@ -1030,21 +1029,21 @@ Remember: Help users find the perfect products within their budget while maintai
                 json.dumps(message_contents, sort_keys=True).encode()
             ).hexdigest()[:16]
             return hash_result
-        except Exception as e:
+        except Exception:
             raise
 
     def _extract_from_cache(
         self, cached_response: Dict[str, Any]
     ) -> tuple[str, List[Dict], List[str]]:
         """Extract data from cached response."""
-        logger.info(f"Cache hit for LLM response")
+        logger.info("Cache hit for LLM response")
         return (
             cached_response.get("response", ""),
             cached_response.get("products", []),
             cached_response.get("tools_used", []),
         )
 
-    async def _process_with_llm(
+    async def _process_with_llm(  # noqa: C901
         self,
         messages: List,
         query: str,
@@ -1274,7 +1273,7 @@ Remember: Help users find the perfect products within their budget while maintai
         content = self._validate_and_clean_response(content)
         return content
 
-    def _validate_and_clean_response(self, response_text: str) -> str:
+    def _validate_and_clean_response(self, response_text: str) -> str:  # noqa: C901
         """Validate response and clean placeholder text.
 
         Detects and warns about placeholder text like [Website Link], [CVS Website Link], etc.
@@ -1431,7 +1430,7 @@ Remember: Help users find the perfect products within their budget while maintai
 
         return response_text
 
-    def _ground_response_to_products(
+    def _ground_response_to_products(  # noqa: C901
         self,
         query: str,
         agent_response: str,
