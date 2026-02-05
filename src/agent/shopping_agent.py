@@ -1334,7 +1334,6 @@ Remember: Help users find the perfect products within their budget while maintai
 
     def _replace_placeholder_text(self, response_text: str) -> str:
         """Replace placeholder text like [Website Link] with a notice."""
-        import re
 
         placeholder_patterns = [
             r"\[(?:CVS|Walmart|Walgreens|Target|Amazon|Store|Website|Product|Online)\s+(?:Website|Store|Link|Purchase|Buy)\s*Link?\]",
@@ -1359,8 +1358,6 @@ Remember: Help users find the perfect products within their budget while maintai
 
     def _is_url_suspicious(self, url: str) -> bool:
         """Check if a URL is suspicious or placeholder-like."""
-        import re
-
         suspicious_patterns = [
             r"example\.com",
             r"placeholder",
@@ -1371,14 +1368,12 @@ Remember: Help users find the perfect products within their budget while maintai
         if any(re.search(pattern, url, re.IGNORECASE) for pattern in suspicious_patterns):
             return True
 
-        if url.strip().startswith("["):
+        url_stripped = url.strip()
+        if url_stripped.startswith("["):
             return True
 
-        if url.strip().endswith("]"):
-            if "?" not in url:
-                return True
-            elif url.rfind("?") >= len(url) - 2:
-                return True
+        if self._has_suspicious_bracket_ending(url, url_stripped):
+            return True
 
         bracket_placeholder_pattern = r"\[(?:Link|URL|Product|Website|Store|Purchase|Buy)[^\]]*\]"
         if re.search(bracket_placeholder_pattern, url, re.IGNORECASE):
@@ -1386,9 +1381,16 @@ Remember: Help users find the perfect products within their budget while maintai
 
         return False
 
+    def _has_suspicious_bracket_ending(self, url: str, url_stripped: str) -> bool:
+        """Check if URL has suspicious bracket ending."""
+        if not url_stripped.endswith("]"):
+            return False
+        if "?" not in url:
+            return True
+        return url.rfind("?") >= len(url) - 2
+
     def _validate_urls_in_response(self, response_text: str) -> None:
         """Validate URLs in response and log warnings for suspicious ones."""
-        import re
         from urllib.parse import urlparse
 
         url_pattern = r"https?://[^\s\)]+"
@@ -1431,8 +1433,6 @@ Remember: Help users find the perfect products within their budget while maintai
 
     def _check_hallucination_patterns(self, response_text: str) -> None:
         """Check for potential hallucinated information in response."""
-        import re
-
         store_address_pattern = r"\b(at|located at|found at)\s+\d+\s+[A-Z][a-z]+\s+(Street|St|Road|Rd|Avenue|Ave|Drive|Dr|Lane|Ln|Boulevard|Blvd|Way|Circle|Ct)"
         potential_addresses = re.findall(store_address_pattern, response_text, re.IGNORECASE)
         if potential_addresses:
@@ -1476,11 +1476,9 @@ Remember: Help users find the perfect products within their budget while maintai
 
     def _clean_display_text(self, s: str) -> str:
         """Clean display text by collapsing whitespace and removing control chars."""
-        import re as _re
-
         if not isinstance(s, str):
             s = str(s)
-        s = _re.sub(r"\s+", " ", s).strip()
+        s = re.sub(r"\s+", " ", s).strip()
         s = "".join(ch for ch in s if (ord(ch) >= 32 and ord(ch) != 127))
         return s
 

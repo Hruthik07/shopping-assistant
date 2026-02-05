@@ -70,6 +70,17 @@ class ShoppingAssistantGuardrails:
     MAX_PRODUCTS_PER_RESPONSE = 50
     MAX_PRICE = 1000000  # $1M max price filter
 
+    # Merchant domains for hallucination detection
+    MERCHANT_DOMAINS = {
+        "amazon": ["amazon.com", "amazon.in", "amazon.co.uk", "amzn.to"],
+        "walmart": ["walmart.com"],
+        "target": ["target.com"],
+        "ebay": ["ebay.com", "ebay.co.uk"],
+        "best buy": ["bestbuy.com"],
+        "costco": ["costco.com"],
+        "sephora": ["sephora.com"],
+    }
+
     def __init__(self):
         self.blocked_patterns = [
             re.compile(pattern, re.IGNORECASE) for pattern in self.BLOCKED_PATTERNS
@@ -382,18 +393,8 @@ class ShoppingAssistantGuardrails:
 
     def _get_merchant_presence(self, products: List[Dict[str, Any]]) -> Tuple[set, Dict[str, bool]]:
         """Get allowed domains and merchant presence from products."""
-        merchant_domains = {
-            "amazon": ["amazon.com", "amazon.in", "amazon.co.uk", "amzn.to"],
-            "walmart": ["walmart.com"],
-            "target": ["target.com"],
-            "ebay": ["ebay.com", "ebay.co.uk"],
-            "best buy": ["bestbuy.com"],
-            "costco": ["costco.com"],
-            "sephora": ["sephora.com"],
-        }
-
         allowed_domains: set[str] = set()
-        present: Dict[str, bool] = {m: False for m in merchant_domains.keys()}
+        present: Dict[str, bool] = {m: False for m in self.MERCHANT_DOMAINS.keys()}
 
         for p in products or []:
             url = p.get("product_url") or p.get("link") or p.get("url")
@@ -401,7 +402,7 @@ class ShoppingAssistantGuardrails:
             if not d:
                 continue
             allowed_domains.add(d)
-            for merchant, domains in merchant_domains.items():
+            for merchant, domains in self.MERCHANT_DOMAINS.items():
                 if any(d == dom or d.endswith("." + dom) or dom in d for dom in domains):
                     present[merchant] = True
 
@@ -461,21 +462,11 @@ class ShoppingAssistantGuardrails:
         if not response or not products:
             return response
 
-        merchant_domains = {
-            "amazon": ["amazon.com", "amazon.in", "amazon.co.uk", "amzn.to"],
-            "walmart": ["walmart.com"],
-            "target": ["target.com"],
-            "ebay": ["ebay.com", "ebay.co.uk"],
-            "best buy": ["bestbuy.com"],
-            "costco": ["costco.com"],
-            "sephora": ["sephora.com"],
-        }
-
         allowed_domains, present = self._get_merchant_presence(products)
 
         text_lower = response.lower()
         mentioned = [
-            m for m in merchant_domains.keys() if re.search(rf"\b{re.escape(m)}\b", text_lower)
+            m for m in self.MERCHANT_DOMAINS.keys() if re.search(rf"\b{re.escape(m)}\b", text_lower)
         ]
 
         bad = [m for m in mentioned if not present.get(m, False)]
