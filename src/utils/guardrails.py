@@ -366,9 +366,92 @@ class ShoppingAssistantGuardrails:
 
         return response.strip()
 
-    def sanitize_response_with_products(
-        self, response: str, products: List[Dict[str, Any]]
-    ) -> str:  # noqa: C901
+    @staticmethod
+    def _extract_domain(url: str) -> Optional[str]:
+        """Extract domain from URL."""
+        if not url or not isinstance(url, str):
+            return None
+        if not url.startswith(("http://", "https://")):
+            return None
+        try:
+            host = urlparse(url).netloc.lower()
+            if host.startswith("www."):
+                host = host[4:]
+            return host
+        except Exception:
+            return None
+
+    def _collect_allowed_domains(
+        self, products: List[Dict[str, Any]], merchant_domains: Dict[str, List[str]]
+    ) -> tuple[set[str], Dict[str, bool]]:
+        """Collect allowed domains from products and check which merchants are present."""
+        allowed_domains: set[str] = set()
+        present: Dict[str, bool] = {m: False for m in merchant_domains.keys()}
+        for p in products or []:
+            url = p.get("product_url") or p.get("link") or p.get("url")
+            d = self._extract_domain(url) if isinstance(url, str) else None
+            if not d:
+                continue
+            allowed_domains.add(d)
+            for merchant, domains in merchant_domains.items():
+                if any(d == dom or d.endswith("." + dom) or dom in d for dom in domains):
+                    present[merchant] = True
+        return allowed_domains, present
+
+    def _find_mentioned_merchants(
+        self, response: str, merchant_domains: Dict[str, List[str]]
+    ) -> List[str]:
+        """Find which merchants are mentioned in the response text."""
+        text_lower = response.lower()
+        return [m for m in merchant_domains.keys() if re.search(rf"\b{re.escape(m)}\b", text_lower)]
+
+    def _strip_untrusted_markdown_links(self, text: str, allowed_domains: set[str]) -> str:
+        """Strip markdown links to domains not in allowed_domains."""
+
+        def repl(m):
+            url = (m.group(2) or "").strip()
+            d = self._extract_domain(url)
+            if not d or (allowed_domains and d not in allowed_domains):
+                return "View Product"
+            return m.group(0)
+
+        return re.sub(r"\[([^\]]+)\]\(([^)]+)\)", repl, text)
+
+    def _neutralize_merchant_mentions(self, response: str, bad_merchants: List[str]) -> str:
+        """Neutralize mentions of merchants that aren't present in product URLs."""
+        for m in bad_merchants:
+            response = re.sub(
+                rf"(?i)\b(buy|purchase|order)\s+(on|from)\s+{re.escape(m)}\b", "Buy here", response
+            )
+            response = re.sub(
+                rf"(?i)\b(view|check|shop)\s+(on|at|from)\s+{re.escape(m)}\b",
+                "View Product",
+                response,
+            )
+            response = re.sub(
+                rf"(?i)\bavailable\s+(on|at)\s+{re.escape(m)}\b", "Available online", response
+            )
+            response = re.sub(
+                rf"(?i)\b(where to buy|buy at|shop at)\s*:\s*{re.escape(m)}\b", "Buy here", response
+            )
+            response = re.sub(rf"(?i)\b(on|at|from|via)\s+{re.escape(m)}\b", "online", response)
+            response = re.sub(rf"(?i)(,|\band)\s+{re.escape(m)}\b", "", response)
+        return response
+
+    def _clean_lines_with_merchants(self, response: str, bad_merchants: List[str]) -> str:
+        """Remove merchant mentions from lines containing buy/purchase/order keywords."""
+        lines = response.splitlines()
+        cleaned_lines: List[str] = []
+        for line in lines:
+            line_lower = line.lower()
+            if "buy" in line_lower or "purchase" in line_lower or "order" in line_lower:
+                for m in bad_merchants:
+                    line = re.sub(rf"(?i)\b{re.escape(m)}\b", "", line).strip()
+                    line = re.sub(r"\s{2,}", " ", line)
+            cleaned_lines.append(line)
+        return "\n".join(cleaned_lines).strip()
+
+    def sanitize_response_with_products(self, response: str, products: List[Dict[str, Any]]) -> str:
         """Sanitize response using product context to prevent merchant/store hallucinations.
 
         If the response claims a merchant (e.g., "Buy on Amazon") but none of the returned
@@ -388,57 +471,11 @@ class ShoppingAssistantGuardrails:
             "sephora": ["sephora.com"],
         }
 
-        def _domain(url: str) -> Optional[str]:
-            if not url or not isinstance(url, str):
-                return None
-            if not url.startswith(("http://", "https://")):
-                return None
-            try:
-                host = urlparse(url).netloc.lower()
-                if host.startswith("www."):
-                    host = host[4:]
-                return host
-            except Exception:
-                return None
-
-        # Allowed domains for links: only domains that actually appear in product URLs
-        allowed_domains: set[str] = set()
-        present: Dict[str, bool] = {m: False for m in merchant_domains.keys()}
-        for p in products or []:
-            url = p.get("product_url") or p.get("link") or p.get("url")
-            d = _domain(url) if isinstance(url, str) else None
-            if not d:
-                continue
-            allowed_domains.add(d)
-            for merchant, domains in merchant_domains.items():
-                if any(d == dom or d.endswith("." + dom) or dom in d for dom in domains):
-                    present[merchant] = True
-
-        # Which merchants are mentioned in text?
-        text_lower = response.lower()
-        mentioned = [
-            m for m in merchant_domains.keys() if re.search(rf"\b{re.escape(m)}\b", text_lower)
-        ]
-
-        # Merchants mentioned but not present => hallucination risk
+        allowed_domains, present = self._collect_allowed_domains(products, merchant_domains)
+        mentioned = self._find_mentioned_merchants(response, merchant_domains)
         bad = [m for m in mentioned if not present.get(m, False)]
-        # Even if merchants aren't explicitly mentioned, we still want to prevent hallucinated links:
-        # if the response contains markdown links to domains that are not in tool-returned product domains,
-        # strip them to avoid users clicking wrong stores.
 
-        def _strip_untrusted_markdown_links(text: str) -> str:
-            # Replace markdown links whose URL domain isn't one of the product URL domains
-            # Keep the visible text, but remove the link wrapper.
-            def repl(m):
-                url = (m.group(2) or "").strip()
-                d = _domain(url)
-                if not d or (allowed_domains and d not in allowed_domains):
-                    return "View Product"
-                return m.group(0)
-
-            return re.sub(r"\[([^\]]+)\]\(([^)]+)\)", repl, text)
-
-        response = _strip_untrusted_markdown_links(response)
+        response = self._strip_untrusted_markdown_links(response, allowed_domains)
 
         if not bad:
             return response
@@ -447,37 +484,8 @@ class ShoppingAssistantGuardrails:
             f"Merchant hallucination detected in response: {bad}. Neutralizing store mentions."
         )
 
-        # Neutralize store mentions with broader patterns (covers "View at Walmart", "Check on Target", etc.)
-        for m in bad:
-            response = re.sub(
-                rf"(?i)\b(buy|purchase|order)\s+(on|from)\s+{re.escape(m)}\b", "Buy here", response
-            )
-            response = re.sub(
-                rf"(?i)\b(view|check|shop)\s+(on|at|from)\s+{re.escape(m)}\b",
-                "View Product",
-                response,
-            )
-            response = re.sub(
-                rf"(?i)\bavailable\s+(on|at)\s+{re.escape(m)}\b", "Available online", response
-            )
-            response = re.sub(
-                rf"(?i)\b(where to buy|buy at|shop at)\s*:\s*{re.escape(m)}\b", "Buy here", response
-            )
-            response = re.sub(rf"(?i)\b(on|at|from|via)\s+{re.escape(m)}\b", "online", response)
-            # Remove list-style mentions like ", Amazon" or "and Target" after we've neutralized context
-            response = re.sub(rf"(?i)(,|\band)\s+{re.escape(m)}\b", "", response)
-
-        # Also remove standalone merchant mentions that appear on lines containing "buy"
-        lines = response.splitlines()
-        cleaned_lines: List[str] = []
-        for line in lines:
-            line_lower = line.lower()
-            if "buy" in line_lower or "purchase" in line_lower or "order" in line_lower:
-                for m in bad:
-                    line = re.sub(rf"(?i)\b{re.escape(m)}\b", "", line).strip()
-                    line = re.sub(r"\s{2,}", " ", line)
-            cleaned_lines.append(line)
-        response = "\n".join(cleaned_lines).strip()
+        response = self._neutralize_merchant_mentions(response, bad)
+        response = self._clean_lines_with_merchants(response, bad)
 
         return response
 
