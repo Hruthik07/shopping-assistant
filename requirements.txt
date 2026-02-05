@@ -1,32 +1,31 @@
 # Core Dependencies
-fastapi>=0.109.1  # Fixed PYSEC-2024-38
-starlette>=0.47.2  # Fixed CVE-2024-47874, CVE-2025-54121 (FastAPI dependency)
+fastapi>=0.109.1,<1.0.0  # Fixed PYSEC-2024-38
+starlette>=0.47.2,<1.0.0  # Fixed CVE-2024-47874, CVE-2025-54121 (FastAPI dependency)
 uvicorn[standard]==0.27.0
-pydantic>=2.6.0  # Use newer version with pre-built wheels for Python 3.13
-pydantic-settings>=2.1.0
+pydantic>=2.6.0,<3.0.0  # Use newer version with pre-built wheels for Python 3.13
+pydantic-settings>=2.1.0,<3.0.0
 python-dotenv==1.0.0
 
 # LangChain & AI
-langchain>=0.3.0  # Updated to support numpy 2.0+
-langchain-openai>=0.2.0
-langchain-anthropic>=0.2.0  # For Claude 3.5 Haiku support
-langchain-community>=0.3.0
-llama-index>=0.13.0  # Fixed multiple CVEs (CVE-2024-4181, CVE-2024-12704, CVE-2024-12911, CVE-2025-1793, CVE-2025-6211, CVE-2025-7707, PYSEC-2025-11, PYSEC-2024-192)
-langgraph>=0.2.0
-openai>=1.12.0
-anthropic>=0.34.0  # Anthropic SDK for Claude
-tiktoken>=0.12.0  # Required by langchain-openai
-numpy>=2.0.0  # Explicitly require numpy 2.0+ for Python 3.13
+langchain>=0.3.0,<1.0.0  # Updated to support numpy 2.0+
+langchain-openai>=0.2.0,<1.0.0
+langchain-anthropic>=0.2.0,<1.0.0  # For Claude 3.5 Haiku support
+langchain-community>=0.3.0,<1.0.0
+langgraph>=0.2.0,<1.0.0
+openai>=1.12.0,<2.0.0
+anthropic>=0.34.0,<1.0.0  # Anthropic SDK for Claude
+tiktoken>=0.12.0,<1.0.0  # Required by langchain-openai
+numpy>=2.0.0,<3.0.0  # Explicitly require numpy 2.0+ for Python 3.13
 
 # Vector Database
-chromadb>=0.5.0  # Updated for Python 3.13 support with pre-built wheels
-sentence-transformers>=2.2.2
-transformers>=4.30.0  # Required by sentence-transformers
-torch>=2.0.0  # Required by sentence-transformers
-scikit-learn>=1.3.0  # Required by sentence-transformers
+chromadb>=0.5.0,<1.0.0  # Updated for Python 3.13 support with pre-built wheels
+sentence-transformers>=2.2.2,<3.0.0
+transformers>=4.30.0,<5.0.0  # Required by sentence-transformers
+torch>=2.0.0,<3.0.0  # Required by sentence-transformers
+scikit-learn>=1.3.0,<2.0.0  # Required by sentence-transformers
 
 # Database
-sqlalchemy>=2.0.36  # Updated for Python 3.13 compatibility
+sqlalchemy>=2.0.36,<3.0.0  # Updated for Python 3.13 compatibility
 alembic==1.13.1
 # psycopg2-binary==2.9.9  # Optional - only needed for PostgreSQL
 
@@ -48,8 +47,8 @@ python-dateutil==2.8.2
 pytz==2024.1
 
 # Caching
-redis>=5.0.0
-hiredis>=2.2.0  # C extension for faster Redis parsing
+redis>=5.0.0,<6.0.0
+hiredis>=2.2.0,<3.0.0  # C extension for faster Redis parsing
 
 # Retry & Resilience
 tenacity>=8.2.0  # Retry library with exponential backoff
@@ -61,8 +60,8 @@ pytest-asyncio==0.23.3
 pytest-cov==4.1.0
 
 # Evaluation & Monitoring
-deepeval>=2.0.0
-langfuse>=2.0.0
+deepeval>=2.0.0,<3.0.0
+langfuse>=2.0.0,<3.0.0
 # pytest-deepeval>=0.1.0  # Removed: not available for Python 3.11+, use deepeval directly
 
 # AWS Integration (for Bedrock deployment)
