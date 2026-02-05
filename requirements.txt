@@ -38,8 +38,8 @@ beautifulsoup4==4.12.2  # For web scraping if needed
 
 # API & WebSocket
 websockets==12.0
-python-multipart>=0.0.22  # Fixed CVE-2024-53981, CVE-2026-24486, PYSEC-2024-38
-python-jose[cryptography]>=3.4.0  # Fixed PYSEC-2024-232, PYSEC-2024-233
+python-multipart>=0.0.22,<1.0.0  # Fixed CVE-2024-53981, CVE-2026-24486, PYSEC-2024-38
+python-jose[cryptography]>=3.4.0,<4.0.0  # Fixed PYSEC-2024-232, PYSEC-2024-233
 passlib[bcrypt]==1.7.4
 
 # Utilities
