@@ -1,6 +1,9 @@
 """FastAPI main application."""
 
-from fastapi import FastAPI
+import asyncio
+import signal
+import sys
+from fastapi import FastAPI, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
@@ -8,12 +11,37 @@ from pathlib import Path
 from contextlib import asynccontextmanager
 from src.api.routes import chat, products, cart, health, metrics, errors, debug
 from src.api.websocket import websocket_endpoint
-from src.api.middleware import RateLimitMiddleware, LoggingMiddleware
+from src.api.middleware import RateLimitMiddleware, LoggingMiddleware, XRayTracingMiddleware
 from src.database.db import init_db
 from src.analytics.logger import logger
 from src.utils.config import settings
 from src.utils.validation import validate_config
 from src.utils.cache import cache_service
+
+# ---------------------------------------------------------------------------
+# Graceful-shutdown helpers
+# ---------------------------------------------------------------------------
+# Set by the SIGTERM handler; the lifespan checks it to skip redundant work.
+_shutting_down = False
+
+
+def _handle_sigterm(signum, frame):
+    """Convert SIGTERM into a clean asyncio-friendly shutdown signal.
+
+    ECS / ALB sends SIGTERM when draining a task.  Without this handler
+    Python ignores SIGTERM (unlike SIGINT/Ctrl-C), so in-flight requests
+    would be cut off mid-flight.  By raising KeyboardInterrupt we let
+    uvicorn's graceful-shutdown path finish active connections before exit.
+    """
+    global _shutting_down
+    _shutting_down = True
+    logger.info("Received SIGTERM – initiating graceful shutdown")
+    raise KeyboardInterrupt
+
+
+# Register on non-Windows platforms (SIGTERM not available on Win32)
+if sys.platform != "win32":
+    signal.signal(signal.SIGTERM, _handle_sigterm)
 
 
 @asynccontextmanager
@@ -61,7 +89,11 @@ async def lifespan(app: FastAPI):
 
     yield
 
-    # Shutdown
+    # ------------------------------------------------------------------
+    # Shutdown – runs after uvicorn has stopped accepting new requests.
+    # At this point all in-flight requests have either completed or been
+    # given the graceful-shutdown timeout to complete.
+    # ------------------------------------------------------------------
     logger.info("Shutting down application...")
 
     # Disconnect cache
@@ -70,6 +102,8 @@ async def lifespan(app: FastAPI):
             await cache_service.disconnect()
         except Exception as e:
             logger.warning(f"Error disconnecting cache: {e}")
+
+    logger.info("Shutdown complete.")
 
 
 # Create FastAPI app
@@ -81,19 +115,22 @@ app = FastAPI(
 )
 
 # CORS middleware
-cors_origins = (
-    settings.cors_origins.split(",")
-    if hasattr(settings, "cors_origins") and settings.cors_origins
-    else ["*"]
-)
-if hasattr(settings, "production_mode") and settings.production_mode and "*" in cors_origins:
-    logger.warning("CORS is set to allow all origins in production. Consider restricting this.")
+_raw_cors = settings.cors_origins.strip() if settings.cors_origins else ""
+cors_origins = [o.strip() for o in _raw_cors.split(",") if o.strip()] if _raw_cors else ["*"]
+
+if settings.production_mode and "*" in cors_origins:
+    raise RuntimeError(
+        "CORS_ORIGINS must be set to an explicit list of allowed origins in production. "
+        "Setting it to '*' is not permitted. "
+        "Set CORS_ORIGINS=https://your-domain.com in your environment."
+    )
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=cors_origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization", "X-API-Key"],
 )
 
 # Serve frontend static files (must be before API routes)
@@ -121,17 +158,37 @@ app.add_middleware(RateLimitMiddleware, calls=settings.rate_limit_per_minute, pe
 # Logging middleware
 app.add_middleware(LoggingMiddleware)
 
-# Include routers
-app.include_router(chat.router)
-app.include_router(products.router)
-app.include_router(cart.router)
-app.include_router(health.router)
-app.include_router(metrics.router)
-app.include_router(errors.router)
-app.include_router(debug.router)
+# AWS X-Ray distributed tracing (enabled via XRAY_ENABLED=true env var)
+import os as _os
+if _os.getenv("XRAY_ENABLED", "false").lower() in ("1", "true", "yes"):
+    app.add_middleware(XRayTracingMiddleware, service_name="shopping-assistant")
 
-# WebSocket endpoint
-app.websocket("/ws")(websocket_endpoint)
+# ── Versioned router – canonical paths (/api/v1/...) ────────────────────────
+_v1 = APIRouter(prefix="/api/v1")
+_v1.include_router(chat.router)
+_v1.include_router(products.router)
+_v1.include_router(cart.router)
+_v1.include_router(health.router)
+_v1.include_router(metrics.router)
+_v1.include_router(errors.router)
+_v1.include_router(debug.router)
+app.include_router(_v1)
+
+# ── Legacy router – old /api/* paths (30-day deprecation window) ─────────────
+# Remove this block after all clients have migrated to /api/v1/*
+_legacy = APIRouter(prefix="/api")
+_legacy.include_router(chat.router)
+_legacy.include_router(products.router)
+_legacy.include_router(cart.router)
+_legacy.include_router(health.router)
+_legacy.include_router(metrics.router)
+_legacy.include_router(errors.router)
+_legacy.include_router(debug.router)
+app.include_router(_legacy)
+
+# WebSocket – canonical path + legacy path
+app.websocket("/api/v1/ws")(websocket_endpoint)
+app.websocket("/ws")(websocket_endpoint)  # legacy – remove after deprecation window
 
 
 # Root endpoint - serve frontend if available, otherwise API info

@@ -111,6 +111,9 @@ if __name__ == "__main__":
         host=host,
         port=port,
         reload=reload,
-        log_level=log_level
+        log_level=log_level,
+        # Give in-flight requests up to 30 s to complete after SIGTERM before
+        # the process is forcibly killed by ECS / the OS.
+        timeout_graceful_shutdown=30,
     )
 

@@ -51,7 +51,7 @@ class LoadTester:
 
         try:
             response = await client.post(
-                f"{self.base_url}/api/chat/",
+                f"{self.base_url}/api/v1/chat/",
                 json={"message": query, "session_id": session_id},
                 headers={"Content-Type": "application/json"},
                 timeout=60.0,

@@ -1,0 +1,108 @@
+{
+  "family": "shopping-assistant",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "1024",
+  "memory": "2048",
+  "executionRoleArn": "arn:aws:iam::<ACCOUNT_ID>:role/shopping-assistant-execution-role",
+  "taskRoleArn": "arn:aws:iam::<ACCOUNT_ID>:role/shopping-assistant-task-role",
+  "containerDefinitions": [
+    {
+      "name": "shopping-assistant",
+      "image": "<ACCOUNT_ID>.dkr.ecr.<AWS_REGION>.amazonaws.com/shopping-assistant:latest",
+      "essential": true,
+      "portMappings": [
+        {
+          "containerPort": 3565,
+          "hostPort": 3565,
+          "protocol": "tcp"
+        }
+      ],
+      "environment": [
+        { "name": "ENVIRONMENT",           "value": "production" },
+        { "name": "AWS_REGION",            "value": "<AWS_REGION>" },
+        { "name": "AWS_SECRETS_NAME",      "value": "prod/shopping-assistant/secrets" },
+        { "name": "XRAY_ENABLED",          "value": "true" },
+        { "name": "LOG_FORMAT",            "value": "json" },
+        { "name": "LOG_LEVEL",             "value": "INFO" },
+        { "name": "CORS_ORIGINS",          "value": "https://<YOUR_DOMAIN>" },
+        { "name": "CHROMA_PERSIST_DIR",    "value": "/tmp/chroma_db" },
+        { "name": "LLM_PROVIDER",          "value": "anthropic" },
+        { "name": "LLM_MODEL",             "value": "claude-3-5-haiku-20241022" },
+        { "name": "CACHE_ENABLED",         "value": "true" },
+        { "name": "CLOUDWATCH_ENABLED",    "value": "true" },
+        { "name": "CLOUDWATCH_NAMESPACE",  "value": "ShoppingAssistant/Application" },
+        { "name": "LANGFUSE_ENABLED",      "value": "true" },
+        { "name": "RATE_LIMIT_PER_MINUTE", "value": "60" }
+      ],
+      "secrets": [
+        {
+          "name": "ANTHROPIC_API_KEY",
+          "valueFrom": "arn:aws:secretsmanager:<AWS_REGION>:<ACCOUNT_ID>:secret:prod/shopping-assistant/secrets:anthropic_api_key::"
+        },
+        {
+          "name": "OPENAI_API_KEY",
+          "valueFrom": "arn:aws:secretsmanager:<AWS_REGION>:<ACCOUNT_ID>:secret:prod/shopping-assistant/secrets:openai_api_key::"
+        },
+        {
+          "name": "TAVILY_API_KEY",
+          "valueFrom": "arn:aws:secretsmanager:<AWS_REGION>:<ACCOUNT_ID>:secret:prod/shopping-assistant/secrets:tavily_api_key::"
+        },
+        {
+          "name": "SERPER_API_KEY",
+          "valueFrom": "arn:aws:secretsmanager:<AWS_REGION>:<ACCOUNT_ID>:secret:prod/shopping-assistant/secrets:serper_api_key::"
+        },
+        {
+          "name": "SECRET_KEY",
+          "valueFrom": "arn:aws:secretsmanager:<AWS_REGION>:<ACCOUNT_ID>:secret:prod/shopping-assistant/secrets:secret_key::"
+        },
+        {
+          "name": "API_KEY",
+          "valueFrom": "arn:aws:secretsmanager:<AWS_REGION>:<ACCOUNT_ID>:secret:prod/shopping-assistant/secrets:api_key::"
+        },
+        {
+          "name": "LANGFUSE_PUBLIC_KEY",
+          "valueFrom": "arn:aws:secretsmanager:<AWS_REGION>:<ACCOUNT_ID>:secret:prod/shopping-assistant/secrets:langfuse_public_key::"
+        },
+        {
+          "name": "LANGFUSE_SECRET_KEY",
+          "valueFrom": "arn:aws:secretsmanager:<AWS_REGION>:<ACCOUNT_ID>:secret:prod/shopping-assistant/secrets:langfuse_secret_key::"
+        },
+        {
+          "name": "DATABASE_URL",
+          "valueFrom": "arn:aws:secretsmanager:<AWS_REGION>:<ACCOUNT_ID>:secret:prod/shopping-assistant/secrets:database_url::"
+        },
+        {
+          "name": "REDIS_URL",
+          "valueFrom": "arn:aws:secretsmanager:<AWS_REGION>:<ACCOUNT_ID>:secret:prod/shopping-assistant/secrets:redis_url::"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group":         "/ecs/shopping-assistant",
+          "awslogs-region":        "<AWS_REGION>",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "healthCheck": {
+        "command": [
+          "CMD-SHELL",
+          "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:3565/api/v1/health/liveness')\" || exit 1"
+        ],
+        "interval":    30,
+        "timeout":     5,
+        "retries":     3,
+        "startPeriod": 60
+      },
+      "stopTimeout": 30,
+      "readonlyRootFilesystem": false,
+      "user": "1001"
+    }
+  ],
+  "tags": [
+    { "key": "Project",     "value": "shopping-assistant" },
+    { "key": "Environment", "value": "production" },
+    { "key": "ManagedBy",   "value": "ecs-task-definition" }
+  ]
+}

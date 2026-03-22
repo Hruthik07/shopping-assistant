@@ -1,0 +1,68 @@
+name: Build and Push to ECR
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  AWS_REGION: us-east-1
+  ECR_REPOSITORY: shopping-assistant
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write   # required for OIDC token exchange
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Authenticate to AWS using GitHub OIDC – no long-lived access keys stored in GitHub.
+      # Prerequisite: create the IAM OIDC identity provider and role in AWS first,
+      # then store the role ARN as GitHub Secret: AWS_ECR_ROLE_ARN
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ECR_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set image tags
+        id: tags
+        run: |
+          REGISTRY="${{ steps.login-ecr.outputs.registry }}"
+          SHA_TAG="${REGISTRY}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}"
+          LATEST_TAG="${REGISTRY}/${{ env.ECR_REPOSITORY }}:latest"
+          echo "sha_tag=${SHA_TAG}" >> $GITHUB_OUTPUT
+          echo "latest_tag=${LATEST_TAG}" >> $GITHUB_OUTPUT
+
+      - name: Build Docker image
+        run: |
+          docker build -f docker/Dockerfile \
+            -t ${{ steps.tags.outputs.sha_tag }} \
+            -t ${{ steps.tags.outputs.latest_tag }} \
+            .
+
+      # Hard gate: CRITICAL CVEs block the push.
+      # If this fails on day one, review the Trivy report before proceeding.
+      - name: Run Trivy scan (CRITICAL gate before push)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ steps.tags.outputs.sha_tag }}
+          format: 'table'
+          severity: 'CRITICAL'
+          exit-code: '1'
+
+      - name: Push image to ECR
+        run: |
+          docker push ${{ steps.tags.outputs.sha_tag }}
+          docker push ${{ steps.tags.outputs.latest_tag }}
+
+      - name: Output pushed image URI
+        run: echo "Pushed ${{ steps.tags.outputs.sha_tag }}"

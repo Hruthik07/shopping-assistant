@@ -16,7 +16,7 @@ def test_root():
 
 def test_health():
     """Test health endpoint."""
-    response = client.get("/api/health")
+    response = client.get("/api/v1/health")
     assert response.status_code == 200
     data = response.json()
     assert "status" in data
@@ -26,7 +26,7 @@ def test_health():
 
 def test_search_products():
     """Test product search endpoint."""
-    response = client.get("/api/products/search?q=headphones")
+    response = client.get("/api/v1/products/search?q=headphones")
     # May return 200 or 503 depending on API key availability
     assert response.status_code in [200, 503]
     if response.status_code == 200:
@@ -38,7 +38,7 @@ def test_search_products():
 @pytest.mark.asyncio
 async def test_chat_endpoint():
     """Test chat endpoint."""
-    response = client.post("/api/chat/", json={"message": "Find me headphones"})
+    response = client.post("/api/v1/chat/", json={"message": "Find me headphones"})
     # May return 200 or 503 depending on API key availability
     assert response.status_code in [200, 503]
     if response.status_code == 200:

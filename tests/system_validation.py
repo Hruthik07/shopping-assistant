@@ -20,7 +20,7 @@ async def test_health_endpoint():
     print("\n[TEST] Health Check Endpoint...")
     try:
         async with httpx.AsyncClient(timeout=TIMEOUT) as client:
-            response = await client.get(f"{BASE_URL}/api/health")
+            response = await client.get(f"{BASE_URL}/api/v1/health")
             if response.status_code == 200:
                 data = response.json()
                 print(f"[OK] Health check passed: {data.get('status', 'unknown')}")
@@ -38,7 +38,7 @@ async def test_liveness():
     print("\n[TEST] Liveness Endpoint...")
     try:
         async with httpx.AsyncClient(timeout=TIMEOUT) as client:
-            response = await client.get(f"{BASE_URL}/api/health/liveness")
+            response = await client.get(f"{BASE_URL}/api/v1/health/liveness")
             if response.status_code == 200:
                 print("[OK] Liveness check passed")
                 return True
@@ -55,7 +55,7 @@ async def test_readiness():
     print("\n[TEST] Readiness Endpoint...")
     try:
         async with httpx.AsyncClient(timeout=TIMEOUT) as client:
-            response = await client.get(f"{BASE_URL}/api/health/readiness")
+            response = await client.get(f"{BASE_URL}/api/v1/health/readiness")
             if response.status_code == 200:
                 data = response.json()
                 print(f"[OK] Readiness check passed: {data.get('status', 'unknown')}")
@@ -73,7 +73,7 @@ async def test_metrics_endpoint():
     print("\n[TEST] Metrics Endpoint...")
     try:
         async with httpx.AsyncClient(timeout=TIMEOUT) as client:
-            response = await client.get(f"{BASE_URL}/api/metrics")
+            response = await client.get(f"{BASE_URL}/api/v1/metrics")
             if response.status_code == 200:
                 data = response.json()
                 print("[OK] Metrics endpoint accessible")
@@ -95,7 +95,7 @@ async def test_chat_endpoint_basic():
             payload = {"message": "Find me wireless headphones under $100"}
             start_time = time.time()
             response = await client.post(
-                f"{BASE_URL}/api/chat/", json=payload, headers={"Content-Type": "application/json"}
+                f"{BASE_URL}/api/v1/chat/", json=payload, headers={"Content-Type": "application/json"}
             )
             elapsed = time.time() - start_time
 
@@ -137,7 +137,7 @@ async def test_chat_endpoint_error_handling():
         async with httpx.AsyncClient(timeout=TIMEOUT) as client:
             # Test with empty message (should be rejected)
             payload = {"message": ""}
-            response = await client.post(f"{BASE_URL}/api/chat/", json=payload)
+            response = await client.post(f"{BASE_URL}/api/v1/chat/", json=payload)
 
             if response.status_code in [400, 422]:
                 print("[OK] Empty message properly rejected")
@@ -155,7 +155,7 @@ async def test_cache_stats():
     print("\n[TEST] Cache Statistics Endpoint...")
     try:
         async with httpx.AsyncClient(timeout=TIMEOUT) as client:
-            response = await client.get(f"{BASE_URL}/api/metrics/cache")
+            response = await client.get(f"{BASE_URL}/api/v1/metrics/cache")
             if response.status_code == 200:
                 data = response.json()
                 print("[OK] Cache stats accessible")
@@ -175,7 +175,7 @@ async def test_error_stats():
     print("\n[TEST] Error Statistics Endpoint...")
     try:
         async with httpx.AsyncClient(timeout=TIMEOUT) as client:
-            response = await client.get(f"{BASE_URL}/api/errors/stats")
+            response = await client.get(f"{BASE_URL}/api/v1/errors/stats")
             if response.status_code == 200:
                 data = response.json()
                 print("[OK] Error stats accessible")
@@ -219,7 +219,7 @@ async def run_all_tests():
     for i in range(max_retries):
         try:
             async with httpx.AsyncClient(timeout=5.0) as client:
-                await client.get(f"{BASE_URL}/api/health/liveness")
+                await client.get(f"{BASE_URL}/api/v1/health/liveness")
                 print("[OK] Server is ready!")
                 break
         except Exception:

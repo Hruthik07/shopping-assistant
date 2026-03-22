@@ -1,6 +1,6 @@
 """Health check and monitoring endpoints."""
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 from typing import Dict, Any
 import time
 import asyncio
@@ -11,7 +11,14 @@ from src.utils.config import settings
 from src.database.db import SessionLocal
 from sqlalchemy import text
 
-router = APIRouter(prefix="/api", tags=["health"])
+router = APIRouter(prefix="", tags=["health"])
+
+# ---------------------------------------------------------------------------
+# Readiness result cache – prevents the ALB health-check probe (fires every
+# 10-30 s) from opening a new DB connection on every single request.
+# ---------------------------------------------------------------------------
+_READINESS_TTL_SECONDS = 10
+_readiness_cache: Dict[str, Any] = {"result": None, "ts": 0.0}
 
 
 @router.get("/health")
@@ -116,17 +123,32 @@ async def health_check() -> Dict[str, Any]:
 
 @router.get("/health/liveness")
 async def liveness() -> Dict[str, str]:
-    """Simple liveness probe for Kubernetes/Docker."""
+    """Instant liveness probe – used by ALB / ECS target health checks.
+
+    Must return in <1 s with no external calls.  The ALB uses this path to
+    decide whether to route traffic to the container; a slow or failing
+    response triggers rapid task replacement.
+    """
     return {"status": "alive"}
 
 
 @router.get("/health/readiness")
 async def readiness() -> Dict[str, Any]:
-    """Readiness probe - checks if service can accept traffic."""
-    checks = {}
+    """Readiness probe – checks whether the service can accept traffic.
+
+    Result is cached for ``_READINESS_TTL_SECONDS`` (10 s) so that a
+    high-frequency ALB probe does not open a new DB connection on every
+    request.  A stale positive result is safe: a truly dead DB will be
+    caught within one TTL window.
+    """
+    now = time.time()
+    if _readiness_cache["result"] is not None and (now - _readiness_cache["ts"]) < _READINESS_TTL_SECONDS:
+        return _readiness_cache["result"]
+
+    checks: Dict[str, str] = {}
     ready = True
 
-    # Check database
+    # Database connectivity
     try:
         db = SessionLocal()
         try:
@@ -139,7 +161,7 @@ async def readiness() -> Dict[str, Any]:
         ready = False
         checks["database"] = f"not_ready: {str(e)}"
 
-    # Check cache (optional, but preferred)
+    # Redis (optional – degraded, not fatal)
     try:
         if cache_service.enabled and cache_service.redis_client:
             await cache_service.redis_client.ping()
@@ -148,6 +170,14 @@ async def readiness() -> Dict[str, Any]:
             checks["cache"] = "not_configured"
     except Exception as e:
         checks["cache"] = f"not_ready: {str(e)}"
-        # Cache is optional, don't fail readiness
 
-    return {"status": "ready" if ready else "not_ready", "checks": checks}
+    result: Dict[str, Any] = {
+        "status": "ready" if ready else "not_ready",
+        "checks": checks,
+    }
+
+    # Store in cache
+    _readiness_cache["result"] = result
+    _readiness_cache["ts"] = now
+
+    return result

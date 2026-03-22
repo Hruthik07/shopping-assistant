@@ -5,7 +5,7 @@ from typing import Dict, Any
 
 from src.analytics.error_tracker import error_tracker
 
-router = APIRouter(prefix="/api/errors", tags=["errors"])
+router = APIRouter(prefix="/errors", tags=["errors"])
 
 
 @router.get("/stats")

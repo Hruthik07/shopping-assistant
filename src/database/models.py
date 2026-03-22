@@ -29,7 +29,7 @@ class Session(Base):
     __tablename__ = "sessions"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True, index=True)
     session_id = Column(String, unique=True, index=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
@@ -45,7 +45,7 @@ class Conversation(Base):
     __tablename__ = "conversations"
 
     id = Column(Integer, primary_key=True, index=True)
-    session_id = Column(Integer, ForeignKey("sessions.id"))
+    session_id = Column(Integer, ForeignKey("sessions.id"), index=True)
     user_message = Column(Text)
     agent_response = Column(Text)
     tools_used = Column(JSON)  # List of tools used
@@ -61,7 +61,7 @@ class UserPreference(Base):
     __tablename__ = "user_preferences"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
+    user_id = Column(Integer, ForeignKey("users.id"), index=True)
     category = Column(String)  # e.g., "electronics", "clothing"
     brand = Column(String)
     price_range_min = Column(Float, nullable=True)
@@ -80,7 +80,7 @@ class CartItem(Base):
     __tablename__ = "cart_items"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
+    user_id = Column(Integer, ForeignKey("users.id"), index=True)
     product_id = Column(String, index=True)
     product_name = Column(String)
     quantity = Column(Integer, default=1)

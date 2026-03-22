@@ -6,7 +6,7 @@ from src.utils.config import settings
 
 import hashlib
 
-router = APIRouter(prefix="/api/debug", tags=["debug"])
+router = APIRouter(prefix="/debug", tags=["debug"])
 
 
 @router.get("/system-prompt")

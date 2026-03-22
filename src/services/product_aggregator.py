@@ -83,78 +83,95 @@ class ProductAggregator:
             logger.warning("No product data sources available")
             return []
 
-        # Query all sources in parallel with error handling
-        tasks = [
-            source.search_products(
-                query=query,
-                num_results=num_results * 2,  # Get more from each source for better deduplication
-                min_price=min_price,
-                max_price=max_price,
-                category=category,
-            )
-            for source in self.sources
-        ]
+        # Per-source timeout: each retailer API call is capped individually so
+        # a single slow source cannot stall the whole request.
+        _PER_SOURCE_TIMEOUT = 8.0   # seconds per source
+        _OVERALL_TIMEOUT    = 12.0  # hard ceiling for all sources combined
 
-        try:
-            results = await asyncio.gather(*tasks, return_exceptions=True)
-
-            # Combine results from all sources with error handling
-            all_products = []
-            successful_sources = 0
-            for idx, result in enumerate(results):
-                if isinstance(result, Exception):
-                    logger.warning(
-                        f"Source {self.sources[idx].get_source_name()} failed: {result}",
-                        exc_info=isinstance(result, Exception),
-                    )
-                    continue
-                if isinstance(result, list):
-                    all_products.extend(result)
-                    successful_sources += 1
-                else:
-                    logger.warning(
-                        f"Source {self.sources[idx].get_source_name()} returned unexpected type: {type(result)}"
-                    )
-
-            if successful_sources == 0:
-                logger.error("All data sources failed, returning empty results")
-                return []
-
-            logger.info(
-                f"Successfully queried {successful_sources}/{len(self.sources)} data sources"
-            )
-
-            # Track API call metrics
-            from src.analytics.tracker import tracker
-
-            tracker.track_api_call(success=True)
-            if successful_sources < len(self.sources):
-                tracker.track_api_call(success=False)  # Track failed sources
-
-            # Deduplicate and merge products
+        async def _fetch_with_timeout(source):
             try:
-                merged_products = self._deduplicate_and_merge(all_products)
-            except Exception as e:
-                logger.error(f"Error deduplicating products: {e}", exc_info=True)
-                # Fallback: return products without deduplication
-                merged_products = all_products
-
-            # Apply filters
-            try:
-                filtered_products = self._apply_filters(
-                    merged_products, min_price, max_price, category
+                return await asyncio.wait_for(
+                    source.search_products(
+                        query=query,
+                        num_results=num_results * 2,
+                        min_price=min_price,
+                        max_price=max_price,
+                        category=category,
+                    ),
+                    timeout=_PER_SOURCE_TIMEOUT,
                 )
-            except Exception as e:
-                logger.error(f"Error filtering products: {e}", exc_info=True)
-                # Fallback: return unfiltered products
-                filtered_products = merged_products
+            except asyncio.TimeoutError:
+                logger.warning(
+                    f"Source {source.get_source_name()} timed out after {_PER_SOURCE_TIMEOUT}s"
+                )
+                return asyncio.TimeoutError(f"{source.get_source_name()} timeout")
 
-            # Return top N results
-            return filtered_products[:num_results]
+        tasks = [_fetch_with_timeout(source) for source in self.sources]
 
+        # ── Fetch from all sources ──────────────────────────────────────────
+        try:
+            results = await asyncio.wait_for(
+                asyncio.gather(*tasks, return_exceptions=True),
+                timeout=_OVERALL_TIMEOUT,
+            )
+        except asyncio.TimeoutError:
+            logger.error(
+                f"Product aggregation timed out after {_OVERALL_TIMEOUT}s – returning empty results"
+            )
+            return []
         except Exception as e:
             logger.error(f"Error aggregating products: {e}", exc_info=True)
             return []
+
+        # ── Process results ─────────────────────────────────────────────────
+        all_products = []
+        successful_sources = 0
+        for idx, result in enumerate(results):
+            if isinstance(result, Exception):
+                logger.warning(
+                    f"Source {self.sources[idx].get_source_name()} failed: {result}",
+                )
+                continue
+            if isinstance(result, list):
+                all_products.extend(result)
+                successful_sources += 1
+            else:
+                logger.warning(
+                    f"Source {self.sources[idx].get_source_name()} returned unexpected type: {type(result)}"
+                )
+
+        if successful_sources == 0:
+            logger.error("All data sources failed, returning empty results")
+            return []
+
+        logger.info(
+            f"Successfully queried {successful_sources}/{len(self.sources)} data sources"
+        )
+
+        # Track API call metrics
+        from src.analytics.tracker import tracker
+
+        tracker.track_api_call(success=True)
+        if successful_sources < len(self.sources):
+            tracker.track_api_call(success=False)
+
+        # Deduplicate and merge products
+        try:
+            merged_products = self._deduplicate_and_merge(all_products)
+        except Exception as e:
+            logger.error(f"Error deduplicating products: {e}", exc_info=True)
+            merged_products = all_products
+
+        # Apply filters
+        try:
+            filtered_products = self._apply_filters(
+                merged_products, min_price, max_price, category
+            )
+        except Exception as e:
+            logger.error(f"Error filtering products: {e}", exc_info=True)
+            filtered_products = merged_products
+
+        return filtered_products[:num_results]
 
     def _deduplicate_and_merge(self, products: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """Deduplicate products by UPC/GTIN/EAN and merge information from multiple sources.

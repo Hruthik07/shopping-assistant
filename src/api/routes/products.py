@@ -5,7 +5,7 @@ from typing import Optional
 from src.api.product_fetcher import product_fetcher
 from src.analytics.logger import logger
 
-router = APIRouter(prefix="/api/products", tags=["products"])
+router = APIRouter(prefix="/products", tags=["products"])
 
 
 @router.get("/search")

@@ -1,6 +1,6 @@
 """Metrics endpoint for monitoring and observability."""
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from typing import Dict, Any, Optional
 import time
 
@@ -10,8 +10,13 @@ from src.analytics.cost_tracker import cost_tracker
 from src.analytics.performance_monitor import performance_monitor
 from src.analytics.tracker import tracker
 from src.utils.cache import cache_service
+from src.api.auth import get_api_key
 
-router = APIRouter(prefix="/api/metrics", tags=["metrics"])
+router = APIRouter(
+    prefix="/metrics",
+    tags=["metrics"],
+    dependencies=[Depends(get_api_key)],  # all metrics routes require API key
+)
 
 
 @router.get("")

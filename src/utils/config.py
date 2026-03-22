@@ -1,7 +1,35 @@
 """Configuration management for the application."""
 
+import json
+import logging
 from pydantic_settings import BaseSettings
 from typing import Optional
+
+_logger = logging.getLogger(__name__)
+
+_DEFAULT_SECRET_KEY = "your-secret-key-change-in-production"
+
+
+def _load_aws_secrets(secret_name: str, region: str) -> dict:
+    """Load secrets from AWS Secrets Manager and return as a dict.
+
+    Falls back to empty dict if boto3 is not installed or the secret cannot
+    be retrieved (so local/dev environments continue to work without AWS).
+    """
+    try:
+        import boto3
+        from botocore.exceptions import ClientError
+
+        client = boto3.client("secretsmanager", region_name=region)
+        response = client.get_secret_value(SecretId=secret_name)
+        secret_string = response.get("SecretString", "{}")
+        return json.loads(secret_string)
+    except ImportError:
+        _logger.warning("boto3 not installed – skipping AWS Secrets Manager load.")
+        return {}
+    except Exception as exc:  # noqa: BLE001
+        _logger.warning("Could not load AWS secret '%s': %s", secret_name, exc)
+        return {}
 
 
 class Settings(BaseSettings):
@@ -43,15 +71,19 @@ class Settings(BaseSettings):
     # API Configuration
     api_host: str = "0.0.0.0"
     api_port: int = 3565
-    secret_key: str = "your-secret-key-change-in-production"
+    secret_key: str = _DEFAULT_SECRET_KEY
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 30
+
+    # API Key Authentication (set this to protect endpoints)
+    # Clients must send:  X-API-Key: <value>
+    api_key: Optional[str] = None
 
     # Rate Limiting
     rate_limit_per_minute: int = 60
 
     # Redis Cache
-    redis_url: str = "redis://localhost:8971/0"
+    redis_url: str = "redis://localhost:6379/0"
     cache_enabled: bool = True
 
     # Cache TTLs (in seconds)
@@ -85,7 +117,9 @@ class Settings(BaseSettings):
     debug_prompts: bool = False
 
     # CORS Configuration (for production)
-    cors_origins: str = "*"  # Comma-separated list of allowed origins
+    # In production set this to a comma-separated list of allowed origins.
+    # Leaving it as "*" in production will cause a startup error.
+    cors_origins: str = "*"
 
     # Model Routing Configuration
     enable_model_routing: bool = False  # Enable dynamic model selection (simple vs complex)
@@ -100,14 +134,9 @@ class Settings(BaseSettings):
     use_openai_embeddings: bool = False  # Use OpenAI embeddings instead of sentence transformers
 
     # Retrieval mode
-    # If enabled, prefer semantic mechanisms over keyword/term-based shortcuts:
-    # - Skip exact-match caches (use semantic cache only)
-    # - Disable brand/keyword heuristic filtering
-    # - Prefer semantic similarity scores for product ranking/explanations
     semantic_only_retrieval: bool = True
 
     # Product aggregation configuration
-    # Data source priority (customer-first order: price comparison first, then direct retailers, then serper)
     product_source_priority: str = (
         "price_comparison,direct_retailers,serper"  # Comma-separated list
     )
@@ -116,11 +145,12 @@ class Settings(BaseSettings):
     enable_coupon_integration: bool = True
     max_retailers_per_product: int = 5  # Maximum number of retailer options to show per product
 
-    # AWS Configuration (for Bedrock deployment)
-    aws_region: str = "us-east-1"  # AWS region for Bedrock/CloudWatch
-    cloudwatch_enabled: bool = False  # Enable CloudWatch metrics export
-    cloudwatch_namespace: str = "ShoppingAssistant/Application"  # CloudWatch namespace
-    bedrock_enabled: bool = False  # Enable AWS Bedrock as LLM provider
+    # AWS Configuration
+    aws_region: str = "us-east-1"
+    aws_secrets_name: Optional[str] = None   # e.g. "prod/shopping-assistant/secrets"
+    cloudwatch_enabled: bool = False
+    cloudwatch_namespace: str = "ShoppingAssistant/Application"
+    bedrock_enabled: bool = False
 
     class Config:
         env_file = ".env"
@@ -128,24 +158,29 @@ class Settings(BaseSettings):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+
+        # Overlay secrets from AWS Secrets Manager when configured
+        if self.aws_secrets_name:
+            aws_secrets = _load_aws_secrets(self.aws_secrets_name, self.aws_region)
+            for field_name, value in aws_secrets.items():
+                lower_field = field_name.lower()
+                if lower_field in self.model_fields and value is not None:
+                    object.__setattr__(self, lower_field, value)
+
         # Auto-detect production mode
-        self.production_mode = (
-            self.environment.lower() == "production" or self.environment.lower() == "prod"
-        )
+        self.production_mode = self.environment.lower() in ("production", "prod")
 
         # Adjust settings for production
         if self.production_mode:
-            # More restrictive logging in production
             if self.log_level == "INFO":
                 self.log_level = "WARNING"
 
-            # Require secret key change
-            if self.secret_key == "your-secret-key-change-in-production":
-                import warnings
-
-                warnings.warn(
-                    "WARNING: Using default secret key in production! "
-                    "Change SECRET_KEY in .env file immediately."
+            # Hard-fail if the default secret key is still in use
+            if self.secret_key == _DEFAULT_SECRET_KEY:
+                raise ValueError(
+                    "SECRET_KEY is set to the default placeholder value. "
+                    "Set a strong, random SECRET_KEY in your environment before "
+                    "starting the application in production."
                 )
 
 

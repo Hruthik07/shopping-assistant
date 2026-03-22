@@ -99,7 +99,7 @@ async def test_health_check():
         import httpx
 
         async with httpx.AsyncClient(timeout=5.0) as client:
-            response = await client.get("http://localhost:3565/api/health")
+            response = await client.get("http://localhost:3565/api/v1/health")
             if response.status_code == 200:
                 print("[OK] Health check endpoint responding")
                 return True

@@ -2,7 +2,9 @@
 
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
+from typing import Optional
 from src.api.schemas import ChatMessage, ChatResponse
+from src.api.auth import get_api_key
 from src.agent.shopping_agent import get_shopping_agent
 from src.memory.session_manager import session_manager
 from src.database.db import get_db
@@ -14,11 +16,15 @@ from src.utils.cache import cache_service
 from src.analytics.error_tracker import error_tracker
 import time
 
-router = APIRouter(prefix="/api/chat", tags=["chat"])
+router = APIRouter(prefix="/chat", tags=["chat"])
 
 
 @router.post("/", response_model=ChatResponse)
-async def chat(message: ChatMessage, db: Session = Depends(get_db)):
+async def chat(
+    message: ChatMessage,
+    db: Session = Depends(get_db),
+    _: Optional[str] = Depends(get_api_key),
+):
     """Process a chat message with latency tracking and guardrails."""
     request_id = latency_tracker.generate_request_id()
     start_time = time.time()  # Initialize start time for latency tracking
@@ -115,8 +121,16 @@ async def chat(message: ChatMessage, db: Session = Depends(get_db)):
 
 
 @router.get("/history/{session_id}")
-async def get_chat_history(session_id: str):
-    """Get chat history for a session."""
+async def get_chat_history(
+    session_id: str,
+    _: Optional[str] = Depends(get_api_key),
+):
+    """Get chat history for a session.
+
+    Returns 404 when the session does not exist rather than an empty list, so
+    that callers cannot enumerate valid session IDs via the response shape.
+    """
+    import uuid as _uuid
     from src.memory.conversation_store import conversation_store
 
     # Guardrail: Validate session ID
@@ -125,9 +139,24 @@ async def get_chat_history(session_id: str):
         logger.warning(f"Invalid session ID in history request: {error_msg}")
         raise HTTPException(status_code=400, detail=error_msg)
 
+    # Enforce UUID format – session IDs are always UUID-v4; anything else is
+    # either malformed or a probing attempt.
     try:
+        _uuid.UUID(session_id, version=4)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid session ID format.")
+
+    try:
+        from src.memory.session_manager import session_manager
+        session = session_manager.get_session(session_id)
+        if session is None:
+            # Return 404 – do not reveal whether the session ever existed
+            raise HTTPException(status_code=404, detail="Session not found.")
+
         history = await conversation_store.get_conversation_history(session_id)
         return {"session_id": session_id, "history": history}
+    except HTTPException:
+        raise
     except ValueError as e:
         logger.warning(f"Validation error getting chat history: {e}")
         raise HTTPException(status_code=400, detail=str(e))
@@ -137,7 +166,7 @@ async def get_chat_history(session_id: str):
 
 
 @router.get("/cache/stats")
-async def get_cache_stats():
+async def get_cache_stats(_: Optional[str] = Depends(get_api_key)):
     """Get cache statistics including hit rate."""
     try:
         internal_stats = cache_service.get_cache_stats()

@@ -9,7 +9,7 @@ from src.mcp.tools.cart_tools import add_to_cart_tool, get_cart_tool, remove_fro
 from src.database.db import get_db
 from src.analytics.logger import logger
 
-router = APIRouter(prefix="/api/cart", tags=["cart"])
+router = APIRouter(prefix="/cart", tags=["cart"])
 
 
 @router.post("/items")

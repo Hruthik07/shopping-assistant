@@ -484,7 +484,7 @@ async function sendMessage() {
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 minute timeout
             
-            const response = await fetch(`${API_BASE_URL}/api/chat/`, {
+            const response = await fetch(`${API_BASE_URL}/api/v1/chat/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1720,7 +1720,7 @@ function hideTypingIndicator() {
 // Check API connection on load
 async function checkConnection() {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/health`);
+        const response = await fetch(`${API_BASE_URL}/api/v1/health`);
         if (response.ok) {
             updateStatus('Connected', 'ready');
         } else {
